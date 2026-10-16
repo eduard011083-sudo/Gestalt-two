@@ -19,13 +19,8 @@
       -webkit-tap-highlight-color: transparent;
       user-select: none;
     }
-    .no-scrollbar::-webkit-scrollbar {
-      display: none;
-    }
-    .no-scrollbar {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
 <body>
@@ -34,7 +29,9 @@
   <script type="text/babel">
     const { useState, useEffect, useMemo } = React;
 
-    // Виброотклик Telegram
+    const BOT_USERNAME = 'gestalt_abrams_bot';
+    const BOT_URL = `https://t.me/${BOT_USERNAME}`;
+
     const triggerHaptic = (style = 'light') => {
       try {
         if (window.Telegram?.WebApp?.HapticFeedback) {
@@ -43,20 +40,26 @@
       } catch (e) {}
     };
 
-    // Быстрые теги-симптомы для простых людей
+    const triggerNotification = (type = 'success') => {
+      try {
+        if (window.Telegram?.WebApp?.HapticFeedback) {
+          window.Telegram.WebApp.HapticFeedback.notificationOccurred(type);
+        }
+      } catch (e) {}
+    };
+
     const QUICK_SYMPTOMS = [
-      { label: 'Все все', value: '' },
+      { label: 'Все', value: '' },
       { label: '😶 Ком в горле', value: 'ком в горле' },
       { label: '😬 Сжатые зубы', value: 'зубы' },
       { label: '👊 Я сам виноват', value: 'сам виноват' },
-      { label: '😤 Все вокруг бесят', value: 'бесят' },
-      { label: '🤡 Перевожу в шутку', value: 'шутк' },
+      { label: '😤 Все бесят', value: 'бесят' },
+      { label: '🤡 Шуточки', value: 'шутк' },
       { label: '🧠 Ушел в логику', value: 'логик' },
       { label: '😒 Мне всё равно', value: 'всё равно' },
-      { label: '😴 Резкая сонливость', value: 'сонливость' }
+      { label: '😴 Сонливость', value: 'сонливость' }
     ];
 
-    // КАТАЛОГ ЗАЩИТ
     const DEFENSES = [
       {
         id: 'retroflection',
@@ -70,6 +73,12 @@
         price: 'Хронические боли в шее и спине, мигрени, ком в горле, проблемы с желудком, выгорание и вечное самоедство.',
         bodySign: 'Сжатые зубы (даже во сне), задержка дыхания, плечи подняты к ушам, привычка кусать губы или щеки изнутри.',
         therapyQuestion: 'Кому на самом деле вы сейчас хотите сказать «нет» или на кого злитесь вместо того, чтобы грызть себя?',
+        sosTitle: 'Разморозка челюсти и возврат импульса',
+        sosSteps: [
+          'Намеренно сожмите кулаки, плечи и челюсти на 5 секунд в полную силу — доведите зажим до предела.',
+          'Резко сбросьте напряжение со звуком «Х-ха!» на длинном выдохе через открытый рот.',
+          'Разомните пальцами жевательные мышцы у скул и шепотом произнесите вслух то, что сейчас удерживаете внутри.'
+        ],
         cinemaRef: 'Нора Дерст («Оставленные») — удерживает запредельную утрату внутри, буквально подставляя тело под удар.'
       },
       {
@@ -84,6 +93,12 @@
         price: 'Хроническая тревога, ожидание подвоха от мира, чтение чужих мыслей («я точно знаю, что он подумал») и одиночество.',
         bodySign: 'Напряженный оценивающий взгляд, настороженная поза, готовность обороняться.',
         therapyQuestion: 'Если то, что вас так бесит в этом человеке, есть и в вас хотя бы на 5% — о чем это?',
+        sosTitle: 'Возврат фокуса из чужой головы в своё тело',
+        sosSteps: [
+          'Отведите взгляд от экрана или человека, мягко расфокусируйте зрение и посмотрите на края комнаты.',
+          'Положите ладонь себе на грудь и скажите про себя: «Я не знаю его мыслей, это моя фантазия от тревоги».',
+          'Переведите внимание в стопы и проверьте: чего прямо сейчас боюсь или хочу лично я?'
+        ],
         cinemaRef: 'Дэвид Фишер («Клиент всегда мёртв») — видит в каждом встречном осуждение, проецируя собственный внутренний стыд.'
       },
       {
@@ -98,6 +113,12 @@
         price: 'Жизнь по чужому сценарию, постоянное чувство вины при попытке отдохнуть и полная потеря понимания «а чего хочу лично я?».',
         bodySign: 'Тяжелая «каменная» плита на плечах, зажатая грудная клетка, вздохи, ком в горле при попытке отказать.',
         therapyQuestion: 'Чьим именно голосом из прошлого сейчас звучит это слово «ДОЛЖЕН» в вашей голове?',
+        sosTitle: 'Сброс чужой плиты с плеч',
+        sosSteps: [
+          'Поднимите плечи максимально высоко к ушам, задержите на 3 секунды и с тяжелым выдохом уроните их вниз.',
+          'Замените вслух фразу «Я должен это сделать» на «Я выбираю это сделать» — и прислушайтесь к реакции живота.',
+          'Если внутри поднимается протест — признайте: это правило вам сейчас не подходит.'
+        ],
         cinemaRef: 'Оливия Киттеридж («Что знает Оливия?») — человек, закованный в броню суровых правил о долге и правильности.'
       },
       {
@@ -112,6 +133,12 @@
         price: 'Ощущение внутренней пустоты: вокруг много людей и шуток, но никто не знает, как вам одиноко на самом деле.',
         bodySign: 'Бегающий взгляд (трудно смотреть в глаза долго), нервный смешок, суетливые движения руками или ногой.',
         therapyQuestion: 'От какого важного и уязвимого чувства вы только что сбежали с помощью этой шутки?',
+        sosTitle: 'Остановка суеты и удержание контакта',
+        sosSteps: [
+          'Остановите мелкие движения руками или ногой, плотно прижмите обе стопы к полу.',
+          'Сделайте паузу на 5 секунд перед тем, как пошутить или сменить тему.',
+          'Назовите про себя одно честное чувство в моменте: «Мне сейчас неловко / страшно / грустно».'
+        ],
         cinemaRef: '«Лобстер» (Йоргос Лантимос) — мир, где живой человеческий контакт заменен нелепыми формальными ритуалами.'
       },
       {
@@ -126,7 +153,13 @@
         price: 'Потеря собственной личности, удушье в отношениях и панический ужас, когда близкий человек хочет побыть отдельно.',
         bodySign: 'Ощущение «ватного» тела, потеря опоры под ногами, подстройка под дыхание и настроение собеседника.',
         therapyQuestion: 'Если прямо сейчас убрать слово «Мы» — чего хотите лично ВЫ в эту минуту?',
-        cinemaRef: 'Елена и Мия («И повсюду тлеют пожары») — разрушительное слияние матерей со своими детьми, где нет права на свою жизнь.'
+        sosTitle: 'Прощупывание физических границ своего «Я»',
+        sosSteps: [
+          'Крепко прохлопайте себя ладонями по плечам, предплечьям, бедрам и ребрам — верните ощущение кожи.',
+          'Почувствуйте спинку стула или пол под ногами как физическую границу вашего тела.',
+          'Произнесите про себя: «Его настроение — это его чувства. Моё тело и моё состояние — здесь».'
+        ],
+        cinemaRef: 'Елена и Мия («И повсюду тлеют пожары») — разрушительное слияние матерей со своими детьми.'
       },
       {
         id: 'intellectualization',
@@ -135,11 +168,17 @@
         metaphor: '«Объяснить боль по науке, чтобы не плакать»',
         humanPhrases: '«Я всё понимаю головой, у него просто детская травма», «Давайте без эмоций, только факты»',
         keywords: 'логик голова мысли анализ бессонница ум контроль',
-        summary: 'Вместо того чтобы прожить обиду, страх или горе, мозг выключает чувствительность тела и превращает ситуацию в научный доклад, схему или бесконечнуюмыслемешалку.',
+        summary: 'Вместо того чтобы прожить обиду, страх или горе, мозг выключает чувствительность тела и превращает ситуацию в научный доклад, схему или бесконечную мыслемешалку.',
         whyNeeded: 'Спасает от шока и дает иллюзию: «Пока я всё понимаю и анализирую — я контролирую хаос».',
         price: 'Вы всё понимаете про свои травмы, но легче не становится. Эмоциональная заморозка, тревожная бессонница, жизнь как у робота.',
         bodySign: 'Холодные пальцы рук и ног, дыхание только самой верхушкой груди, ощущение «говорящей головы без тела».',
         therapyQuestion: 'Если на минуту запретить себе думать и анализировать: где в теле сейчас живет эта боль?',
+        sosTitle: 'Спуск внимания из кипящей головы в живот и стопы',
+        sosSteps: [
+          'Интенсивно разотрите ладони друг о друга до горячего тепла и приложите их к шее сзади или к животу.',
+          'Перенесите 100% внимания в пальцы ног — пошевелите ими внутри обуви, почувствуйте температуру.',
+          'Сделайте 3 медленных вдоха животом (чтобы поднималась рука на животе, а не грудь).'
+        ],
         cinemaRef: 'Дэвид Фишер («Клиент всегда мёртв») — прячет ужас смерти отца за бухгалтерскими таблицами и регламентами.'
       },
       {
@@ -154,6 +193,12 @@
         price: 'Тотальный цинизм, выжженное поле внутри, неспособность радоваться своим победам и принимать благодарность.',
         bodySign: 'Кривая усмешка, закатывание глаз, тяжелый скептический выдох, закрытая поза.',
         therapyQuestion: 'Как сильно вам на самом деле этого хотелось, прежде чем вы сказали «мне всё равно»?',
+        sosTitle: 'Разморозка ценности и уязвимости',
+        sosSteps: [
+          'Разомкните скрещенные руки, расправьте грудную клетку и опустите подбородок.',
+          'Признайтесь себе без свидетелей: «Мне НЕ всё равно. Мне было бы очень больно это потерять или не получить».',
+          'Найдите хотя бы одну деталь, за которую вы сейчас искренне благодарны себе.'
+        ],
         cinemaRef: '«Пылающий» (Ли Чхан-дон) — холодная скука и обесценивание чужих жизней как способ скрыть собственную пустоту.'
       },
       {
@@ -168,11 +213,16 @@
         price: 'Запертое в подвале чувство никуда не исчезает: на его удержание уходит 80% жизненных сил, а наружу оно рвется через беспричинные панические атаки.',
         bodySign: 'Внезапная дикая сонливость и зевота при начале трудного разговора, «туман» перед глазами, забывчивость.',
         therapyQuestion: 'О чем именно шел разговор за секунду до того, как вам резко стало скучно или захотелось спать?',
+        sosTitle: 'Включение реальности при тумане и отключке',
+        sosSteps: [
+          'Интенсивно разотрите мочки ушей и умойтесь холодной водой (или подержите в руках холодный предмет).',
+          'Назовите вслух 3 предмета зеленого или синего цвета вокруг себя, возвращая четкость зрения.',
+          'Задайте себе вопрос: «Какая тема только что показалась моей психике слишком опасной?»'
+        ],
         cinemaRef: 'Камилла Прикер («Острые предметы») — вытесняет страшную правду о матери ценой полной потери контакта с собой.'
       }
     ];
 
-    // СЛОВАРЬ-ПЕРЕВОДЧИК УМНЫХ СЛОВ НА ЧЕЛОВЕЧЕСКИЙ
     const DICTIONARY = [
       {
         term: 'Интроект',
@@ -338,6 +388,14 @@
       }
     ];
 
+    const GROUNDING_STEPS = [
+      { id: 1, icon: '👀', label: 'Найдите глазами 5 синих или зеленых предметов вокруг себя' },
+      { id: 2, icon: '✋', label: 'Потрогайте 4 разные текстуры (ткань одежды, прохладный стол, кожу, волосы)' },
+      { id: 3, icon: '👂', label: 'Услышьте 3 тихих фоновых звука в пространстве' },
+      { id: 4, icon: '👃', label: 'Сделайте вдох и уловите 2 запаха (или температуру воздуха носом)' },
+      { id: 5, icon: '🦶', label: 'Плотно надавите обеими стопами в пол и почувствуйте опору' }
+    ];
+
     function App() {
       const [tab, setTab] = useState('catalog');
       const [expandedId, setExpandedId] = useState('retroflection');
@@ -346,6 +404,14 @@
       const [currentQ, setCurrentQ] = useState(0);
       const [score, setScore] = useState({});
       const [result, setResult] = useState(null);
+      const [copied, setCopied] = useState(false);
+
+      // Состояния для Скорой Помощи (Заземление)
+      const [selectedSosId, setSelectedSosId] = useState('retroflection');
+      const [breathingActive, setBreathingActive] = useState(false);
+      const [breathPhase, setBreathPhase] = useState('idle'); // inhale (4s) -> hold (2s) -> exhale (6s)
+      const [breathTimer, setBreathTimer] = useState(0);
+      const [checkedSteps, setCheckedSteps] = useState({});
 
       useEffect(() => {
         if (window.Telegram?.WebApp) {
@@ -353,6 +419,50 @@
           window.Telegram.WebApp.expand();
         }
       }, []);
+
+      // Таймер дыхательного тренажера 4-2-6
+      useEffect(() => {
+        if (!breathingActive) {
+          setBreathPhase('idle');
+          setBreathTimer(0);
+          return;
+        }
+
+        let currentPhase = 'inhale';
+        let timeLeft = 4;
+        setBreathPhase('inhale');
+        setBreathTimer(4);
+        triggerHaptic('medium');
+
+        const interval = setInterval(() => {
+          timeLeft -= 1;
+          if (timeLeft > 0) {
+            setBreathTimer(timeLeft);
+          } else {
+            if (currentPhase === 'inhale') {
+              currentPhase = 'hold';
+              timeLeft = 2;
+              setBreathPhase('hold');
+              setBreathTimer(2);
+              triggerHaptic('light');
+            } else if (currentPhase === 'hold') {
+              currentPhase = 'exhale';
+              timeLeft = 6;
+              setBreathPhase('exhale');
+              setBreathTimer(6);
+              triggerHaptic('heavy');
+            } else {
+              currentPhase = 'inhale';
+              timeLeft = 4;
+              setBreathPhase('inhale');
+              setBreathTimer(4);
+              triggerHaptic('medium');
+            }
+          }
+        }, 1000);
+
+        return () => clearInterval(interval);
+      }, [breathingActive]);
 
       const filteredDefenses = useMemo(() => {
         const q = searchQuery.trim().toLowerCase();
@@ -383,6 +493,14 @@
         setExpandedId(expandedId === id ? null : id);
       };
 
+      const openSosForDefense = (id, e) => {
+        if (e) e.stopPropagation();
+        triggerHaptic('medium');
+        setSelectedSosId(id);
+        setTab('sos');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      };
+
       const handleAnswer = (type) => {
         triggerHaptic('medium');
         const nextScore = { ...score, [type]: (score[type] || 0) + 1 };
@@ -391,39 +509,89 @@
         if (currentQ + 1 < TEST_QUESTIONS.length) {
           setCurrentQ(currentQ + 1);
         } else {
-          const topKey = Object.keys(nextScore).sort((a, b) => nextScore[b] - nextScore[a])[0];
-          const found = DEFENSES.find(d => d.id === topKey) || DEFENSES[0];
-          setResult({ main: found, counts: nextScore });
+          const total = TEST_QUESTIONS.length;
+          const breakdown = Object.keys(nextScore)
+            .map(key => {
+              const def = DEFENSES.find(d => d.id === key);
+              return {
+                ...def,
+                count: nextScore[key],
+                percent: Math.round((nextScore[key] / total) * 100)
+              };
+            })
+            .sort((a, b) => b.count - a.count);
+
+          setResult({
+            main: breakdown[0] || DEFENSES[0],
+            breakdown
+          });
           setCurrentQ(0);
           setScore({});
+          triggerNotification('success');
         }
       };
+
+      const getShareText = () => {
+        if (!result) return '';
+        const topLines = result.breakdown
+          .slice(0, 3)
+          .map(item => `• ${item.title} (${item.simpleName}) — ${item.percent}%`)
+          .join('\n');
+
+        return `🧠 Мой профиль в «Карте Защит»:\n\n${topLines}\n\n💬 ${result.main.metaphor}\n🫀 Маркер в теле: ${result.main.bodySign}\n\n👉 Проверь, какая психологическая защита сейчас работает у тебя: ${BOT_URL}`;
+      };
+
+      const shareToTelegram = () => {
+        triggerHaptic('medium');
+        const text = getShareText();
+        const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(BOT_URL)}&text=${encodeURIComponent(text)}`;
+        if (window.Telegram?.WebApp?.openTelegramLink) {
+          window.Telegram.WebApp.openTelegramLink(shareUrl);
+        } else {
+          window.open(shareUrl, '_blank');
+        }
+      };
+
+      const copyShareText = () => {
+        triggerHaptic('light');
+        const text = getShareText();
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(text);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2500);
+        }
+      };
+
+      const activeSosDefense = DEFENSES.find(d => d.id === selectedSosId) || DEFENSES[0];
 
       return (
         <div className="max-w-md mx-auto min-h-screen flex flex-col bg-[#090d16] text-slate-100 pb-24">
           {/* Header */}
-          <header className="px-4 py-3.5 border-b border-slate-800/80 sticky top-0 bg-[#090d16]/90 backdrop-blur-md z-20 flex items-center justify-between">
+          <header className="px-4 py-3 border-b border-slate-800/80 sticky top-0 bg-[#090d16]/90 backdrop-blur-md z-20 flex items-center justify-between">
             <div>
-              <h1 className="text-lg font-bold text-emerald-400 tracking-tight">Карта Защит</h1>
+              <h1 className="text-base font-bold text-emerald-400 tracking-tight">Карта Защит</h1>
               <p className="text-[11px] text-slate-400">Психология и гештальт на человеческом языке</p>
             </div>
-            <span className="text-[11px] px-2.5 py-1 bg-emerald-950/50 rounded-full border border-emerald-700/40 text-emerald-300 font-medium">
-              Gestalt Lab
-            </span>
+            <button
+              onClick={() => { triggerHaptic('medium'); setTab('sos'); }}
+              className="text-[11px] px-2.5 py-1 bg-rose-950/60 hover:bg-rose-900/60 rounded-full border border-rose-700/50 text-rose-300 font-semibold flex items-center gap-1 active:scale-95 transition"
+            >
+              <span>🫁</span>
+              <span>SOS</span>
+            </button>
           </header>
 
           {/* Main Content */}
           <main className="p-4 flex-1">
-            {/* ВКЛАДКА 1: КАТАЛОГ ЗАЩИТ С ПОИСКОМ ПО СИМПТОМАМ */}
+            {/* ВКЛАДКА 1: КАТАЛОГ ЗАЩИТ */}
             {tab === 'catalog' && (
               <div className="space-y-3.5">
-                {/* Строка поиска */}
                 <div className="relative">
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="🔍 Найти по симптому: ком в горле, зубы, стыд, злость..."
+                    placeholder="🔍 Поиск по симптому: ком в горле, зубы, стыд, злость..."
                     className="w-full bg-slate-900/90 border border-slate-700/80 focus:border-emerald-500 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 placeholder-slate-500 outline-none transition"
                   />
                   {searchQuery && (
@@ -436,7 +604,6 @@
                   )}
                 </div>
 
-                {/* Быстрые кнопки-симптомы */}
                 <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
                   {QUICK_SYMPTOMS.map((tag, i) => {
                     const active = searchQuery === tag.value;
@@ -450,7 +617,7 @@
                         className={`whitespace-nowrap px-2.5 py-1 rounded-full text-[11px] border transition ${
                           active
                             ? 'bg-emerald-500 text-slate-950 border-emerald-400 font-bold'
-                            : 'bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700'
+                            : 'bg-slate-900 text-slate-300 border-slate-800'
                         }`}
                       >
                         {tag.label}
@@ -459,87 +626,87 @@
                   })}
                 </div>
 
-                {/* Список карточек */}
-                {filteredDefenses.length === 0 ? (
-                  <div className="p-6 text-center bg-slate-900/50 rounded-2xl border border-slate-800 text-xs text-slate-400">
-                    По этому запросу ничего не найдено. Попробуйте выбрать один из тегов выше.
-                  </div>
-                ) : (
-                  filteredDefenses.map((item) => {
-                    const isOpen = expandedId === item.id || searchQuery.trim().length > 0;
-                    return (
-                      <div
-                        key={item.id}
-                        onClick={() => toggleCard(item.id)}
-                        className={`cursor-pointer rounded-2xl border transition-all duration-200 p-4 ${
-                          isOpen
-                            ? 'bg-slate-900/95 border-emerald-500/60 shadow-lg shadow-emerald-950/20'
-                            : 'bg-slate-900/60 border-slate-800/80 hover:border-slate-700'
-                        }`}
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <div>
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <h2 className="text-base font-bold text-slate-100">{item.title}</h2>
-                              <span className="text-[10px] font-semibold text-emerald-300 bg-emerald-950/70 px-2 py-0.5 rounded-full border border-emerald-700/40">
-                                {item.simpleName}
-                              </span>
-                            </div>
-                            <p className="text-xs font-medium text-emerald-400/90 mt-1 italic">
-                              {item.metaphor}
-                            </p>
+                {filteredDefenses.map((item) => {
+                  const isOpen = expandedId === item.id || searchQuery.trim().length > 0;
+                  return (
+                    <div
+                      key={item.id}
+                      onClick={() => toggleCard(item.id)}
+                      className={`cursor-pointer rounded-2xl border transition-all duration-200 p-4 ${
+                        isOpen
+                          ? 'bg-slate-900/95 border-emerald-500/60 shadow-lg shadow-emerald-950/20'
+                          : 'bg-slate-900/60 border-slate-800/80'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h2 className="text-base font-bold text-slate-100">{item.title}</h2>
+                            <span className="text-[10px] font-semibold text-emerald-300 bg-emerald-950/70 px-2 py-0.5 rounded-full border border-emerald-700/40">
+                              {item.simpleName}
+                            </span>
                           </div>
-                          <span className="text-xs text-slate-500 mt-1">{isOpen ? '▲' : '▼'}</span>
+                          <p className="text-xs font-medium text-emerald-400/90 mt-1 italic">
+                            {item.metaphor}
+                          </p>
                         </div>
-
-                        {/* Как звучит по-человечески */}
-                        <div className="mt-2.5 bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/70">
-                          <span className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold block mb-0.5">
-                            🗣 Как звучит в жизни:
-                          </span>
-                          <p className="text-xs text-slate-200 italic">{item.humanPhrases}</p>
-                        </div>
-
-                        <p className="text-xs text-slate-300 mt-2.5 leading-relaxed">
-                          {item.summary}
-                        </p>
-
-                        {isOpen && (
-                          <div className="mt-3.5 pt-3 border-t border-slate-800/90 space-y-2.5 text-xs">
-                            <div>
-                              <span className="text-emerald-400 font-semibold block mb-0.5">🛡 Зачем психика это включила:</span>
-                              <span className="text-slate-300 leading-relaxed">{item.whyNeeded}</span>
-                            </div>
-                            <div>
-                              <span className="text-amber-400 font-semibold block mb-0.5">🫀 Как узнать по телу:</span>
-                              <span className="text-slate-200 leading-relaxed">{item.bodySign}</span>
-                            </div>
-                            <div>
-                              <span className="text-rose-400 font-semibold block mb-0.5">💸 Какую цену вы платите:</span>
-                              <span className="text-slate-300 leading-relaxed">{item.price}</span>
-                            </div>
-                            <div className="bg-emerald-950/30 p-3 rounded-xl border border-emerald-800/40">
-                              <span className="text-emerald-300 font-semibold block mb-0.5">💡 Вопрос для самопроверки:</span>
-                              <span className="text-emerald-100 italic">{item.therapyQuestion}</span>
-                            </div>
-                            <div>
-                              <span className="text-indigo-400 font-semibold block mb-0.5">🎬 Пример в кино:</span>
-                              <span className="text-slate-300">{item.cinemaRef}</span>
-                            </div>
-                          </div>
-                        )}
+                        <span className="text-xs text-slate-500 mt-1">{isOpen ? '▲' : '▼'}</span>
                       </div>
-                    );
-                  })
-                )}
+
+                      <div className="mt-2.5 bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/70">
+                        <span className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold block mb-0.5">
+                          🗣 Как звучит в жизни:
+                        </span>
+                        <p className="text-xs text-slate-200 italic">{item.humanPhrases}</p>
+                      </div>
+
+                      <p className="text-xs text-slate-300 mt-2.5 leading-relaxed">
+                        {item.summary}
+                      </p>
+
+                      {isOpen && (
+                        <div className="mt-3.5 pt-3 border-t border-slate-800/90 space-y-2.5 text-xs">
+                          <div>
+                            <span className="text-emerald-400 font-semibold block mb-0.5">🛡 Зачем психика это включила:</span>
+                            <span className="text-slate-300 leading-relaxed">{item.whyNeeded}</span>
+                          </div>
+                          <div>
+                            <span className="text-amber-400 font-semibold block mb-0.5">🫀 Как узнать по телу:</span>
+                            <span className="text-slate-200 leading-relaxed">{item.bodySign}</span>
+                          </div>
+                          <div>
+                            <span className="text-rose-400 font-semibold block mb-0.5">💸 Какую цену вы платите:</span>
+                            <span className="text-slate-300 leading-relaxed">{item.price}</span>
+                          </div>
+                          <div className="bg-emerald-950/30 p-3 rounded-xl border border-emerald-800/40">
+                            <span className="text-emerald-300 font-semibold block mb-0.5">💡 Вопрос для самопроверки:</span>
+                            <span className="text-emerald-100 italic">{item.therapyQuestion}</span>
+                          </div>
+                          <div>
+                            <span className="text-indigo-400 font-semibold block mb-0.5">🎬 Пример в кино:</span>
+                            <span className="text-slate-300">{item.cinemaRef}</span>
+                          </div>
+
+                          <button
+                            onClick={(e) => openSosForDefense(item.id, e)}
+                            className="w-full mt-2 py-2.5 px-3 bg-emerald-950/80 hover:bg-emerald-900/80 border border-emerald-600/50 rounded-xl text-emerald-300 font-semibold text-xs flex items-center justify-center gap-1.5 active:scale-[0.98] transition"
+                          >
+                            <span>🫁</span>
+                            <span>Снять этот зажим прямо сейчас (60 сек)</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
 
-            {/* ВКЛАДКА 2: ПЕРЕВОДЧИК С ПСИХОЛОГИЧЕСКОГО НА ЧЕЛОВЕЧЕСКИЙ */}
+            {/* ВКЛАДКА 2: ПЕРЕВОДЧИК */}
             {tab === 'dict' && (
               <div className="space-y-3.5">
                 <div className="p-3.5 bg-emerald-950/30 border border-emerald-800/40 rounded-2xl text-xs text-emerald-200 leading-relaxed">
-                  📖 <strong>Словарь без заумных слов.</strong> Здесь сложные термины психологов переведены на язык обычных жизненных ситуаций, чтобы вы сразу понимали, что происходит с вами.
+                  📖 <strong>Словарь без заумных слов.</strong> Перевод терминов на язык обычных жизненных ситуаций.
                 </div>
 
                 <input
@@ -559,12 +726,10 @@
                           = {item.human}
                         </span>
                       </div>
-
                       <div className="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800/70 text-xs">
                         <span className="text-amber-400/90 font-semibold block mb-0.5">⚡ Как это выглядит в жизни:</span>
                         <p className="text-slate-200 leading-relaxed">{item.inLife}</p>
                       </div>
-
                       <p className="text-xs text-slate-300 leading-relaxed pt-0.5">
                         <strong className="text-slate-100">Простыми словами:</strong> {item.meaning}
                       </p>
@@ -574,7 +739,7 @@
               </div>
             )}
 
-            {/* ВКЛАДКА 3: ТЕСТ */}
+            {/* ВКЛАДКА 3: ТЕСТ + РАДАР + ШЕРИНГ */}
             {tab === 'test' && (
               <div className="space-y-4">
                 {!result ? (
@@ -608,17 +773,43 @@
                     </div>
                   </div>
                 ) : (
-                  <div className="p-5 bg-slate-900 border border-emerald-500/60 rounded-2xl space-y-4">
+                  <div className="p-4 bg-slate-900 border border-emerald-500/60 rounded-2xl space-y-4">
                     <div className="text-center space-y-1">
                       <span className="text-3xl">🧠</span>
-                      <p className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Сейчас у вас сильнее всего работает</p>
+                      <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">
+                        Ваш защитный профиль прямо сейчас
+                      </p>
                       <h2 className="text-lg font-bold text-emerald-400">
-                        {result.main.title} ({result.main.simpleName})
+                        {result.main.title}
                       </h2>
-                      <p className="text-xs text-emerald-300/90 italic">{result.main.metaphor}</p>
+                      <p className="text-xs text-slate-300 font-medium">({result.main.simpleName})</p>
+                      <p className="text-xs text-emerald-300/90 italic pt-0.5">{result.main.metaphor}</p>
                     </div>
 
-                    <div className="bg-slate-950/80 p-3.5 rounded-xl border border-slate-800 space-y-2.5 text-xs">
+                    {/* Процентная шкала всех сработавших защит */}
+                    <div className="bg-slate-950/90 p-3.5 rounded-xl border border-slate-800 space-y-2.5">
+                      <span className="text-[11px] font-semibold text-slate-400 block">
+                        📊 Соотношение ваших реакций:
+                      </span>
+                      {result.breakdown.map((item) => (
+                        <div key={item.id} className="space-y-1">
+                          <div className="flex justify-between text-xs">
+                            <span className="font-semibold text-slate-200">
+                              {item.title} <span className="text-slate-400 font-normal">({item.simpleName})</span>
+                            </span>
+                            <span className="text-emerald-400 font-bold">{item.percent}%</span>
+                          </div>
+                          <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                            <div
+                              className="bg-emerald-500 h-full rounded-full"
+                              style={{ width: `${item.percent}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="bg-slate-950/80 p-3.5 rounded-xl border border-slate-800 space-y-2 text-xs">
                       <p className="text-slate-200 leading-relaxed">{result.main.summary}</p>
                       <div className="pt-2 border-t border-slate-800 space-y-1.5">
                         <p><strong className="text-amber-400">🫀 В теле:</strong> <span className="text-slate-300">{result.main.bodySign}</span></p>
@@ -626,26 +817,197 @@
                       </div>
                     </div>
 
-                    <div className="bg-emerald-950/40 p-3 rounded-xl border border-emerald-800/40 text-xs">
-                      <span className="text-emerald-300 font-semibold block mb-1">💡 Вопрос, который поможет выдохнуть:</span>
-                      <p className="text-emerald-100 italic">{result.main.therapyQuestion}</p>
-                    </div>
-
                     <button
-                      onClick={() => {
-                        triggerHaptic('light');
-                        setResult(null);
-                      }}
-                      className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs transition active:scale-[0.98]"
+                      onClick={() => openSosForDefense(result.main.id)}
+                      className="w-full py-3 bg-emerald-950/90 hover:bg-emerald-900 border border-emerald-500/60 text-emerald-300 font-bold rounded-xl text-xs flex items-center justify-center gap-2 transition active:scale-[0.98]"
                     >
-                      Пройти тест заново
+                      <span>🫁</span>
+                      <span>Снять зажим «{result.main.title}» за 60 секунд</span>
                     </button>
+
+                    {/* Блок вирусного шеринга */}
+                    <div className="pt-2 border-t border-slate-800 space-y-2">
+                      <p className="text-[11px] text-center text-slate-400">
+                        Поделитесь профилем с близкими или сохраните себе:
+                      </p>
+                      <button
+                        onClick={shareToTelegram}
+                        className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/50 transition active:scale-[0.98]"
+                      >
+                        <span>✈️</span>
+                        <span>Отправить результат другу в Telegram</span>
+                      </button>
+
+                      <div className="flex gap-2">
+                        <button
+                          onClick={copyShareText}
+                          className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold rounded-xl text-xs transition active:scale-[0.98]"
+                        >
+                          {copied ? '✅ Скопировано!' : '📋 Скопировать текст'}
+                        </button>
+                        <button
+                          onClick={() => {
+                            triggerHaptic('light');
+                            setResult(null);
+                          }}
+                          className="py-2.5 px-4 bg-slate-800/60 hover:bg-slate-800 text-slate-400 font-medium rounded-xl text-xs transition"
+                        >
+                          Заново ↻
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
             )}
 
-            {/* ВКЛАДКА 4: КИНО-КОПИЛКА */}
+            {/* ВКЛАДКА 4: СКОРАЯ ПОМОЩЬ / ЗАЗЕМЛЕНИЕ */}
+            {tab === 'sos' && (
+              <div className="space-y-4">
+                {/* 1. Дыхательный круг с вибрацией */}
+                <div className="p-4 bg-slate-900 border border-slate-800 rounded-2xl text-center space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider">
+                      🫁 Дыхание 4–2–6 (сброс кортизола)
+                    </span>
+                    <span className="text-[10px] text-slate-400">С вибро-пульсом</span>
+                  </div>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    Длинный выдох включает парасимпатическую нервную систему и сигнализирует телу: «Опасность миновала».
+                  </p>
+
+                  <div className="py-5 flex flex-col items-center justify-center">
+                    <div
+                      className={`w-36 h-36 rounded-full flex flex-col items-center justify-center border-2 transition-all duration-1000 ${
+                        breathPhase === 'inhale'
+                          ? 'scale-110 bg-emerald-500/20 border-emerald-400 shadow-[0_0_35px_rgba(16,185,129,0.35)]'
+                          : breathPhase === 'hold'
+                          ? 'scale-110 bg-amber-500/20 border-amber-400 shadow-[0_0_35px_rgba(245,158,11,0.3)]'
+                          : breathPhase === 'exhale'
+                          ? 'scale-90 bg-sky-500/15 border-sky-400/70'
+                          : 'scale-100 bg-slate-800/70 border-slate-700'
+                      }`}
+                    >
+                      <span className="text-sm font-bold text-slate-100">
+                        {breathPhase === 'inhale' && 'ВДОХ носом'}
+                        {breathPhase === 'hold' && 'ПАУЗА'}
+                        {breathPhase === 'exhale' && 'ВЫДОХ ртом'}
+                        {breathPhase === 'idle' && 'Готовы?'}
+                      </span>
+                      {breathingActive && (
+                        <span className="text-2xl font-extrabold text-emerald-400 mt-1">
+                          {breathTimer} с
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      triggerHaptic('medium');
+                      setBreathingActive(!breathingActive);
+                    }}
+                    className={`w-full py-2.5 rounded-xl font-bold text-xs transition ${
+                      breathingActive
+                        ? 'bg-rose-950/80 text-rose-300 border border-rose-700/60'
+                        : 'bg-emerald-500 text-slate-950'
+                    }`}
+                  >
+                    {breathingActive ? '⏹ Остановить дыхание' : '▶️ Запустить дыхательный цикл'}
+                  </button>
+                </div>
+
+                {/* 2. Адресная разморозка под конкретную защиту */}
+                <div className="p-4 bg-slate-900 border border-slate-800 rounded-2xl space-y-3">
+                  <span className="text-xs font-bold text-amber-400 uppercase tracking-wider block">
+                    🔓 Телесная разрядка под ваш зажим
+                  </span>
+
+                  <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
+                    {DEFENSES.map((d) => (
+                      <button
+                        key={d.id}
+                        onClick={() => {
+                          triggerHaptic('light');
+                          setSelectedSosId(d.id);
+                        }}
+                        className={`whitespace-nowrap px-2.5 py-1 rounded-full text-[11px] border transition ${
+                          selectedSosId === d.id
+                            ? 'bg-amber-400 text-slate-950 border-amber-300 font-bold'
+                            : 'bg-slate-950 text-slate-300 border-slate-800'
+                        }`}
+                      >
+                        {d.title}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="bg-slate-950/90 p-3.5 rounded-xl border border-slate-800/90 space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-xs font-bold text-emerald-400">
+                        {activeSosDefense.sosTitle}
+                      </h3>
+                    </div>
+                    <p className="text-[11px] text-slate-400">
+                      Симптом: {activeSosDefense.bodySign}
+                    </p>
+                    <div className="space-y-2 pt-1">
+                      {activeSosDefense.sosSteps.map((step, i) => (
+                        <div key={i} className="flex items-start gap-2.5 text-xs text-slate-200">
+                          <span className="w-5 h-5 rounded-full bg-emerald-950 border border-emerald-700/60 text-emerald-400 font-bold flex items-center justify-center shrink-0 text-[11px]">
+                            {i + 1}
+                          </span>
+                          <span className="leading-relaxed">{step}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 3. Интерактивный чек-лист возврата в реальность 5-4-3-2-1 */}
+                <div className="p-4 bg-slate-900 border border-slate-800 rounded-2xl space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-indigo-400 uppercase tracking-wider">
+                      ⚓ Быстрое заземление «5–4–3–2–1»
+                    </span>
+                    <button
+                      onClick={() => { triggerHaptic('light'); setCheckedSteps({}); }}
+                      className="text-[11px] text-slate-400 hover:text-white"
+                    >
+                      Сбросить
+                    </button>
+                  </div>
+                  <p className="text-xs text-slate-400">
+                    Нажимайте на каждый пункт по мере выполнения, чтобы вернуть мозг из тревожных фантазий в «здесь и сейчас»:
+                  </p>
+
+                  <div className="space-y-2">
+                    {GROUNDING_STEPS.map((s) => {
+                      const done = !!checkedSteps[s.id];
+                      return (
+                        <button
+                          key={s.id}
+                          onClick={() => {
+                            triggerHaptic('light');
+                            setCheckedSteps({ ...checkedSteps, [s.id]: !done });
+                          }}
+                          className={`w-full text-left p-3 rounded-xl border text-xs flex items-center gap-3 transition ${
+                            done
+                              ? 'bg-emerald-950/40 border-emerald-600/50 text-emerald-200 line-through opacity-75'
+                              : 'bg-slate-950/70 border-slate-800 text-slate-200'
+                          }`}
+                        >
+                          <span className="text-base">{done ? '✅' : s.icon}</span>
+                          <span className="leading-snug flex-1">{s.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ВКЛАДКА 5: КИНО-КОПИЛКА */}
             {tab === 'cinema' && (
               <div className="space-y-3">
                 <div className="p-3 bg-slate-900/80 border border-slate-800 rounded-xl text-xs text-slate-300">
@@ -672,32 +1034,39 @@
             )}
           </main>
 
-          {/* Нижнее меню (4 вкладки) */}
-          <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-[#090d16]/95 border-t border-slate-800/90 backdrop-blur-md flex justify-around p-2 z-30">
+          {/* Нижнее меню (5 вкладок) */}
+          <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-[#090d16]/95 border-t border-slate-800/90 backdrop-blur-md flex justify-around py-2 px-1 z-30">
             <button
               onClick={() => { triggerHaptic('light'); setTab('catalog'); }}
-              className={`flex flex-col items-center py-1 px-2 text-[11px] transition ${tab === 'catalog' ? 'text-emerald-400 font-bold' : 'text-slate-400'}`}
+              className={`flex flex-col items-center py-1 px-1.5 text-[10px] transition ${tab === 'catalog' ? 'text-emerald-400 font-bold' : 'text-slate-400'}`}
             >
               <span className="text-base mb-0.5">🧩</span>
               <span>Защиты</span>
             </button>
             <button
               onClick={() => { triggerHaptic('light'); setTab('dict'); }}
-              className={`flex flex-col items-center py-1 px-2 text-[11px] transition ${tab === 'dict' ? 'text-emerald-400 font-bold' : 'text-slate-400'}`}
+              className={`flex flex-col items-center py-1 px-1.5 text-[10px] transition ${tab === 'dict' ? 'text-emerald-400 font-bold' : 'text-slate-400'}`}
             >
               <span className="text-base mb-0.5">🗣</span>
-              <span>Переводчик</span>
+              <span>Словарь</span>
             </button>
             <button
               onClick={() => { triggerHaptic('light'); setTab('test'); }}
-              className={`flex flex-col items-center py-1 px-2 text-[11px] transition ${tab === 'test' ? 'text-emerald-400 font-bold' : 'text-slate-400'}`}
+              className={`flex flex-col items-center py-1 px-1.5 text-[10px] transition ${tab === 'test' ? 'text-emerald-400 font-bold' : 'text-slate-400'}`}
             >
               <span className="text-base mb-0.5">🎯</span>
               <span>Тест</span>
             </button>
             <button
+              onClick={() => { triggerHaptic('light'); setTab('sos'); }}
+              className={`flex flex-col items-center py-1 px-1.5 text-[10px] transition ${tab === 'sos' ? 'text-emerald-400 font-bold' : 'text-slate-400'}`}
+            >
+              <span className="text-base mb-0.5">🫁</span>
+              <span>Помощь</span>
+            </button>
+            <button
               onClick={() => { triggerHaptic('light'); setTab('cinema'); }}
-              className={`flex flex-col items-center py-1 px-2 text-[11px] transition ${tab === 'cinema' ? 'text-emerald-400 font-bold' : 'text-slate-400'}`}
+              className={`flex flex-col items-center py-1 px-1.5 text-[10px] transition ${tab === 'cinema' ? 'text-emerald-400 font-bold' : 'text-slate-400'}`}
             >
               <span className="text-base mb-0.5">🎬</span>
               <span>Кино</span>
