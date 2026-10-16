@@ -31,6 +31,7 @@
 
     const BOT_USERNAME = 'gestalt_abrams_bot';
     const BOT_URL = `https://t.me/${BOT_USERNAME}`;
+    const CHANNEL_URL = 'https://t.me/GestaltAbramov';
 
     const triggerHaptic = (style = 'light') => {
       try {
@@ -46,6 +47,15 @@
           window.Telegram.WebApp.HapticFeedback.notificationOccurred(type);
         }
       } catch (e) {}
+    };
+
+    const openExternalLink = (url) => {
+      triggerHaptic('medium');
+      if (window.Telegram?.WebApp?.openTelegramLink) {
+        window.Telegram.WebApp.openTelegramLink(url);
+      } else {
+        window.open(url, '_blank');
+      }
     };
 
     const QUICK_SYMPTOMS = [
@@ -128,7 +138,7 @@
         metaphor: '«Смех вместо слёз, болтовня вместо близости»',
         humanPhrases: '«Ой, да ладно, проехали!», «Ха-ха, ну ты загнул», «Кстати, а вы видели новости?..»',
         keywords: 'шутк смех болтовня скука перевести тему суета',
-        summary: 'Как только разговор становится слишком личным, острым или трогательным — вы мгновенно сбиваете градус шуточкой, иронией, сменой темы или общими фразами.',
+        summary: 'Как только разговор становится слишком личным, острым или трогательным — вы мгновенно сбиваете градус шуточкой, иронией, сведением темы к шутке или общими фразами.',
         whyNeeded: 'Спасает от страха оказаться слишком уязвимым, обнаженным или отвергнутым в близком контакте.',
         price: 'Ощущение внутренней пустоты: вокруг много людей и шуток, но никто не знает, как вам одиноко на самом деле.',
         bodySign: 'Бегающий взгляд (трудно смотреть в глаза долго), нервный смешок, суетливые движения руками или ногой.',
@@ -382,7 +392,7 @@
       },
       {
         title: 'Лобстер (The Lobster)',
-        hero: 'Дэвид и жители Отеля',
+        hero: 'Герой Колина Фаррелла и жители Отеля',
         defenses: 'Конфлюэнция (Слияние) + Дефлексия',
         text: 'Гениальная сатира на искусственное слияние: в мире фильма пара может быть вместе, только если у обоих одинаковый изъян (например, оба хромают или у обоих идет кровь из носа). Попытка построить близость через стирание различий.'
       }
@@ -390,9 +400,9 @@
 
     const GROUNDING_STEPS = [
       { id: 1, icon: '👀', label: 'Найдите глазами 5 синих или зеленых предметов вокруг себя' },
-      { id: 2, icon: '✋', label: 'Потрогайте 4 разные текстуры (ткань одежды, прохладный стол, кожу, волосы)' },
+      { id: 2, icon: '✋', label: 'Потрогайте 4 разные текстуры (ткань одежды, прохладный стол, кожу)' },
       { id: 3, icon: '👂', label: 'Услышьте 3 тихих фоновых звука в пространстве' },
-      { id: 4, icon: '👃', label: 'Сделайте вдох и уловите 2 запаха (или температуру воздуха носом)' },
+      { id: 4, icon: '👃', label: 'Сделайте вдох и уловите 2 запаха носом' },
       { id: 5, icon: '🦶', label: 'Плотно надавите обеими стопами в пол и почувствуйте опору' }
     ];
 
@@ -406,10 +416,9 @@
       const [result, setResult] = useState(null);
       const [copied, setCopied] = useState(false);
 
-      // Состояния для Скорой Помощи (Заземление)
       const [selectedSosId, setSelectedSosId] = useState('retroflection');
       const [breathingActive, setBreathingActive] = useState(false);
-      const [breathPhase, setBreathPhase] = useState('idle'); // inhale (4s) -> hold (2s) -> exhale (6s)
+      const [breathPhase, setBreathPhase] = useState('idle');
       const [breathTimer, setBreathTimer] = useState(0);
       const [checkedSteps, setCheckedSteps] = useState({});
 
@@ -420,7 +429,6 @@
         }
       }, []);
 
-      // Таймер дыхательного тренажера 4-2-6
       useEffect(() => {
         if (!breathingActive) {
           setBreathPhase('idle');
@@ -538,13 +546,13 @@
           .map(item => `• ${item.title} (${item.simpleName}) — ${item.percent}%`)
           .join('\n');
 
-        return `🧠 Мой профиль в «Карте Защит»:\n\n${topLines}\n\n💬 ${result.main.metaphor}\n🫀 Маркер в теле: ${result.main.bodySign}\n\n👉 Проверь, какая психологическая защита сейчас работает у тебя: ${BOT_URL}`;
+        return `🧠 Мой профиль в «Карте Защит»:\n\n${topLines}\n\n💬 ${result.main.metaphor}\n🫀 Маркер в теле: ${result.main.bodySign}\n\n👉 Проверь свою защиту и читай канал автора: ${CHANNEL_URL}`;
       };
 
       const shareToTelegram = () => {
         triggerHaptic('medium');
         const text = getShareText();
-        const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(BOT_URL)}&text=${encodeURIComponent(text)}`;
+        const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(CHANNEL_URL)}&text=${encodeURIComponent(text)}`;
         if (window.Telegram?.WebApp?.openTelegramLink) {
           window.Telegram.WebApp.openTelegramLink(shareUrl);
         } else {
@@ -566,24 +574,33 @@
 
       return (
         <div className="max-w-md mx-auto min-h-screen flex flex-col bg-[#090d16] text-slate-100 pb-24">
-          {/* Header */}
+          {/* Header с кнопкой канала */}
           <header className="px-4 py-3 border-b border-slate-800/80 sticky top-0 bg-[#090d16]/90 backdrop-blur-md z-20 flex items-center justify-between">
             <div>
               <h1 className="text-base font-bold text-emerald-400 tracking-tight">Карта Защит</h1>
               <p className="text-[11px] text-slate-400">Психология и гештальт на человеческом языке</p>
             </div>
-            <button
-              onClick={() => { triggerHaptic('medium'); setTab('sos'); }}
-              className="text-[11px] px-2.5 py-1 bg-rose-950/60 hover:bg-rose-900/60 rounded-full border border-rose-700/50 text-rose-300 font-semibold flex items-center gap-1 active:scale-95 transition"
-            >
-              <span>🫁</span>
-              <span>SOS</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => openExternalLink(CHANNEL_URL)}
+                className="text-[11px] px-2.5 py-1 bg-emerald-950/70 hover:bg-emerald-900/80 rounded-full border border-emerald-600/50 text-emerald-300 font-semibold flex items-center gap-1 active:scale-95 transition"
+              >
+                <span>📢</span>
+                <span>Канал</span>
+              </button>
+              <button
+                onClick={() => { triggerHaptic('medium'); setTab('sos'); }}
+                className="text-[11px] px-2 py-1 bg-rose-950/60 hover:bg-rose-900/60 rounded-full border border-rose-700/50 text-rose-300 font-semibold flex items-center gap-1 active:scale-95 transition"
+              >
+                <span>🫁</span>
+                <span>SOS</span>
+              </button>
+            </div>
           </header>
 
           {/* Main Content */}
           <main className="p-4 flex-1">
-            {/* ВКЛАДКА 1: КАТАЛОГ ЗАЩИТ */}
+            {/* ВКЛАДКА 1: КАТАЛОГ */}
             {tab === 'catalog' && (
               <div className="space-y-3.5">
                 <div className="relative">
@@ -702,7 +719,7 @@
               </div>
             )}
 
-            {/* ВКЛАДКА 2: ПЕРЕВОДЧИК */}
+            {/* ВКЛАДКА 2: СЛОВАРЬ */}
             {tab === 'dict' && (
               <div className="space-y-3.5">
                 <div className="p-3.5 bg-emerald-950/30 border border-emerald-800/40 rounded-2xl text-xs text-emerald-200 leading-relaxed">
@@ -739,7 +756,7 @@
               </div>
             )}
 
-            {/* ВКЛАДКА 3: ТЕСТ + РАДАР + ШЕРИНГ */}
+            {/* ВКЛАДКА 3: ТЕСТ + ССЫЛКА НА КАНАЛ В ИТОГАХ */}
             {tab === 'test' && (
               <div className="space-y-4">
                 {!result ? (
@@ -786,7 +803,6 @@
                       <p className="text-xs text-emerald-300/90 italic pt-0.5">{result.main.metaphor}</p>
                     </div>
 
-                    {/* Процентная шкала всех сработавших защит */}
                     <div className="bg-slate-950/90 p-3.5 rounded-xl border border-slate-800 space-y-2.5">
                       <span className="text-[11px] font-semibold text-slate-400 block">
                         📊 Соотношение ваших реакций:
@@ -825,7 +841,20 @@
                       <span>Снять зажим «{result.main.title}» за 60 секунд</span>
                     </button>
 
-                    {/* Блок вирусного шеринга */}
+                    {/* Прямая ссылка на канал автора внутри теста */}
+                    <div className="bg-slate-950/60 p-3.5 rounded-xl border border-emerald-800/40 flex items-center justify-between gap-3">
+                      <div className="text-xs">
+                        <strong className="text-emerald-300 block">Авторский канал о гештальте</strong>
+                        <span className="text-slate-400 text-[11px]">Разборы, практика и статьи от Эдуарда Абрамова</span>
+                      </div>
+                      <button
+                        onClick={() => openExternalLink(CHANNEL_URL)}
+                        className="py-2 px-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-lg text-xs whitespace-nowrap transition active:scale-95"
+                      >
+                        Перейти ↗
+                      </button>
+                    </div>
+
                     <div className="pt-2 border-t border-slate-800 space-y-2">
                       <p className="text-[11px] text-center text-slate-400">
                         Поделитесь профилем с близкими или сохраните себе:
@@ -861,10 +890,9 @@
               </div>
             )}
 
-            {/* ВКЛАДКА 4: СКОРАЯ ПОМОЩЬ / ЗАЗЕМЛЕНИЕ */}
+            {/* ВКЛАДКА 4: СКОРАЯ ПОМОЩЬ */}
             {tab === 'sos' && (
               <div className="space-y-4">
-                {/* 1. Дыхательный круг с вибрацией */}
                 <div className="p-4 bg-slate-900 border border-slate-800 rounded-2xl text-center space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider">
@@ -917,7 +945,6 @@
                   </button>
                 </div>
 
-                {/* 2. Адресная разморозка под конкретную защиту */}
                 <div className="p-4 bg-slate-900 border border-slate-800 rounded-2xl space-y-3">
                   <span className="text-xs font-bold text-amber-400 uppercase tracking-wider block">
                     🔓 Телесная разрядка под ваш зажим
@@ -964,7 +991,6 @@
                   </div>
                 </div>
 
-                {/* 3. Интерактивный чек-лист возврата в реальность 5-4-3-2-1 */}
                 <div className="p-4 bg-slate-900 border border-slate-800 rounded-2xl space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-indigo-400 uppercase tracking-wider">
@@ -1007,7 +1033,7 @@
               </div>
             )}
 
-            {/* ВКЛАДКА 5: КИНО-КОПИЛКА */}
+            {/* ВКЛАДКА 5: КИНО */}
             {tab === 'cinema' && (
               <div className="space-y-3">
                 <div className="p-3 bg-slate-900/80 border border-slate-800 rounded-xl text-xs text-slate-300">
@@ -1034,7 +1060,7 @@
             )}
           </main>
 
-          {/* Нижнее меню (5 вкладок) */}
+          {/* Нижнее меню */}
           <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-[#090d16]/95 border-t border-slate-800/90 backdrop-blur-md flex justify-around py-2 px-1 z-30">
             <button
               onClick={() => { triggerHaptic('light'); setTab('catalog'); }}
