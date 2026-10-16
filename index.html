@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Карта Защит — Telegram Mini App</title>
+  <!-- Telegram WebApp SDK -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- React & ReactDOM -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <!-- Babel для работы JSX прямо в браузере -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    body {
+      background-color: #0f172a;
+      color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    const DEFENSES = [
+      {
+        id: 'intellectualization',
+        title: 'Интеллектуализация',
+        metaphor: '«Побег в голову от горячих чувств»',
+        summary: 'Когда эмоции становятся слишком опасными или хаотичными, мозг переводит всё в сухую теорию, формулы и анализ.',
+        plus: 'Спасает от аффекта и дает иллюзию контроля над неконтролируемым.',
+        price: 'Отрыв от тела, эмоциональная глухота, фоновая тревога и зажимы в шее.',
+        bodySign: 'Дыхание поверхностное, челюсти напряжены, контакт только через логику.',
+        cinemaRef: 'Дэвид Фишер («Клиент всегда мёртв») — структурирует смерть прайсами и правилами бюро, чтобы не проживать внутренний кризис.'
+      },
+      {
+        id: 'retroflection',
+        title: 'Ретрофлексия',
+        metaphor: '«Запрет на выдох и удар по себе»',
+        summary: 'Импульс, который должен был пойти наружу (злость, несогласие, просьба о помощи), разворачивается и бьет по самому человеку.',
+        plus: 'Защищает от внешних конфликтов и риска быть отвергнутым.',
+        price: 'Психосоматика, головные боли, самоедство, истощение («я всё сделаю сам»).',
+        bodySign: 'Сжатые зубы, плечи подняты к ушам, сдавленный голос.',
+        cinemaRef: 'Нора Дерст («Оставленные») — терпит невыносимую утрату молча, направляя разрушение внутрь.'
+      },
+      {
+        id: 'repression',
+        title: 'Вытеснение',
+        metaphor: '«Захлопнуть дверь в подвал памяти»',
+        summary: 'Мозг буквально стирает воспоминания или переживания, делая вид, что проблемы никогда не существовало.',
+        plus: 'Позволяет функционировать прямо сейчас, не разрушаясь от травмы.',
+        price: 'Колоссальный расход энергии на удержание двери закрытой.',
+        bodySign: 'Внезапная сонливость при сложных темах, «туман» в голове.',
+        cinemaRef: 'Камилла Прикер («Острые предметы») — вытесняет семейное насилие до полного разрыва контакта с реальностью.'
+      }
+    ];
+
+    const QUESTIONS = [
+      {
+        text: 'Когда неожиданно наваливается стресс и конфликт, что происходит первым?',
+        options: [
+          { text: 'Начинаю всё анализировать, искать логику и строить планы в голове', type: 'intellectualization' },
+          { text: 'Замираю, терплю, сжимаю зубы и молча тяну лямку', type: 'retroflection' },
+          { text: 'Делаю вид, что всё нормально, перевожу тему или забываю детали', type: 'repression' }
+        ]
+      },
+      {
+        text: 'Как вы обычно обходитесь со злостью?',
+        options: [
+          { text: 'Объясняю человеку, почему он логически не прав (лекция вместо крика)', type: 'intellectualization' },
+          { text: 'Злюсь на себя: «опять я виноват(а), надо было сдержаться»', type: 'retroflection' },
+          { text: 'Я почти не чувствую злости, мне обычно просто всё равно', type: 'repression' }
+        ]
+      }
+    ];
+
+    function App() {
+      const [tab, setTab] = useState('catalog');
+      const [testStep, setTestStep] = useState(0);
+      const [answers, setAnswers] = useState([]);
+      const [testResult, setTestResult] = useState(null);
+
+      useEffect(() => {
+        if (window.Telegram?.WebApp) {
+          window.Telegram.WebApp.ready();
+          window.Telegram.WebApp.expand();
+        }
+      }, []);
+
+      const handleAnswer = (type) => {
+        const nextAnswers = [...answers, type];
+        if (testStep + 1 < QUESTIONS.length) {
+          setAnswers(nextAnswers);
+          setTestStep(testStep + 1);
+        } else {
+          const counts = nextAnswers.reduce((acc, curr) => {
+            acc[curr] = (acc[curr] || 0) + 1;
+            return acc;
+          }, {});
+          const top = Object.keys(counts).sort((a, b) => counts[b] - counts[a])[0];
+          setTestResult(DEFENSES.find(d => d.id === top) || DEFENSES[0]);
+          setTestStep(0);
+          setAnswers([]);
+        }
+      };
+
+      return (
+        <div className="max-w-md mx-auto min-h-screen flex flex-col bg-slate-900 text-slate-100 pb-20">
+          <header className="p-4 border-b border-slate-800 flex items-center justify-between sticky top-0 bg-slate-900/90 backdrop-blur z-10">
+            <div>
+              <h1 className="text-lg font-bold text-emerald-400">Карта Защит</h1>
+              <p className="text-xs text-slate-400">Атлас психологических механизмов</p>
+            </div>
+            <span className="text-xs px-2.5 py-1 bg-slate-800 rounded-full border border-slate-700 text-slate-300">
+              Gestalt Lab
+            </span>
+          </header>
+
+          <main className="p-4 flex-1">
+            {tab === 'catalog' && (
+              <div className="space-y-4">
+                <div className="p-3 bg-emerald-950/40 border border-emerald-800/50 rounded-xl text-xs text-emerald-300">
+                  💡 Нажмите на защиту, чтобы изучить маркеры в теле и примеры из кино.
+                </div>
+                {DEFENSES.map((item) => (
+                  <div key={item.id} className="p-4 bg-slate-800/80 border border-slate-700/60 rounded-2xl space-y-2">
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-base font-semibold text-slate-100">{item.title}</h2>
+                      <span className="text-xs text-emerald-400 bg-emerald-950/50 px-2 py-0.5 rounded-full border border-emerald-800/40">щит</span>
+                    </div>
+                    <p className="text-xs font-medium text-emerald-300 italic">{item.metaphor}</p>
+                    <p className="text-sm text-slate-300">{item.summary}</p>
+                    <div className="pt-2 border-t border-slate-700/50 space-y-1.5 text-xs">
+                      <div><strong className="text-slate-400">В теле:</strong> <span className="text-slate-300">{item.bodySign}</span></div>
+                      <div><strong className="text-slate-400">В кино:</strong> <span className="text-slate-300">{item.cinemaRef}</span></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {tab === 'test' && (
+              <div className="space-y-4">
+                {!testResult ? (
+                  <div className="p-5 bg-slate-800/90 border border-slate-700 rounded-2xl space-y-4">
+                    <div className="flex justify-between items-center text-xs text-slate-400">
+                      <span>Вопрос {testStep + 1} из {QUESTIONS.length}</span>
+                      <span>Самопроверка</span>
+                    </div>
+                    <h2 className="text-base font-semibold text-slate-100">
+                      {QUESTIONS[testStep].text}
+                    </h2>
+                    <div className="space-y-2 pt-2">
+                      {QUESTIONS[testStep].options.map((opt, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => handleAnswer(opt.type)}
+                          className="w-full text-left p-3.5 rounded-xl bg-slate-700/60 hover:bg-emerald-950/60 border border-slate-600/50 hover:border-emerald-600/60 transition-all text-sm text-slate-200"
+                        >
+                          {opt.text}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-5 bg-slate-800 border border-emerald-700/50 rounded-2xl space-y-4 text-center">
+                    <span className="text-3xl">🌿</span>
+                    <h2 className="text-lg font-bold text-emerald-400">
+                      Сегодня фонит: {testResult.title}
+                    </h2>
+                    <p className="text-xs text-emerald-300 italic">{testResult.metaphor}</p>
+                    <p className="text-sm text-slate-300 text-left bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+                      {testResult.summary}
+                    </p>
+                    <div className="text-left text-xs text-slate-400 space-y-1">
+                      <p><strong>Зачем сейчас:</strong> {testResult.plus}</p>
+                      <p><strong>Чего стоит:</strong> {testResult.price}</p>
+                    </div>
+                    <button
+                      onClick={() => setTestResult(null)}
+                      className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-semibold rounded-xl text-sm transition"
+                    >
+                      Пройти заново
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {tab === 'cinema' && (
+              <div className="space-y-4">
+                <div className="p-4 bg-slate-800/80 border border-slate-700 rounded-2xl space-y-2">
+                  <span className="text-xs text-emerald-400 font-semibold uppercase tracking-wider">Сериал: Клиент всегда мёртв</span>
+                  <h3 className="text-base font-bold text-slate-100">Дэвид Фишер и регламенты против горя</h3>
+                  <p className="text-xs text-emerald-300">Защита: Интеллектуализация + Смещение</p>
+                  <p className="text-sm text-slate-300">
+                    Дэвид упаковывает смерть отца и страх перед собственной идентичностью в бухгалтерские книги и подбор обивки гробов. Психика делает всё, чтобы не дать ему упасть в хаос чувств.
+                  </p>
+                </div>
+
+                <div className="p-4 bg-slate-800/80 border border-slate-700 rounded-2xl space-y-2">
+                  <span className="text-xs text-emerald-400 font-semibold uppercase tracking-wider">Сериал: Оставленные</span>
+                  <h3 className="text-base font-bold text-slate-100">Нора Дерст и эмоциональная анестезия</h3>
+                  <p className="text-xs text-emerald-300">Защита: Вытеснение + Ретрофлексия</p>
+                  <p className="text-sm text-slate-300">
+                    Потеря всей семьи за одну секунду — это запредельная боль. Нора буквально выключает чувствительность, заменяя живое горе рискованными действиями и полной изоляцией.
+                  </p>
+                </div>
+              </div>
+            )}
+          </main>
+
+          <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-slate-900/95 border-t border-slate-800 backdrop-blur flex justify-around p-2 z-20">
+            <button
+              onClick={() => setTab('catalog')}
+              className={`flex flex-col items-center py-1 px-3 text-xs ${tab === 'catalog' ? 'text-emerald-400 font-semibold' : 'text-slate-400'}`}
+            >
+              <span className="text-base">🧩</span>
+              <span>Каталог</span>
+            </button>
+            <button
+              onClick={() => setTab('test')}
+              className={`flex flex-col items-center py-1 px-3 text-xs ${tab === 'test' ? 'text-emerald-400 font-semibold' : 'text-slate-400'}`}
+            >
+              <span className="text-base">🎯</span>
+              <span>Тест</span>
+            </button>
+            <button
+              onClick={() => setTab('cinema')}
+              className={`flex flex-col items-center py-1 px-3 text-xs ${tab === 'cinema' ? 'text-emerald-400 font-semibold' : 'text-slate-400'}`}
+            >
+              <span className="text-base">🎬</span>
+              <span>Кино</span>
+            </button>
+          </nav>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+  </script>
+</body>
+</html>
