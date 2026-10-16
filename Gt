@@ -1,0 +1,1743 @@
+```react
+import React, { useState, useEffect, useMemo } from 'react';
+import {
+  Brain,
+  Film,
+  Compass,
+  Award,
+  Search,
+  ChevronRight,
+  Sparkles,
+  Shield,
+  HeartHandshake,
+  Eye,
+  MessageSquare,
+  CheckCircle2,
+  RotateCcw,
+  Share2,
+  BookOpen,
+  Layers,
+  Network,
+  Info,
+  X,
+  ArrowRight,
+  BatteryCharging,
+  Flame,
+  Lock,
+  Unlock,
+  Check,
+  Clapperboard,
+  Quote,
+  Activity,
+  UserCheck
+} from 'lucide-react';
+
+// ==========================================
+// БАЗА ДАННЫХ: ЗАЩИТНЫЕ МЕХАНИЗМЫ (КАТАЛОГ)
+// ==========================================
+const DEFENSES_DATA = [
+  {
+    id: 'intellectualization',
+    name: 'Интеллектуализация',
+    metaphor: '«Побег в голову от горячих чувств»',
+    category: 'Защиты Эго',
+    shortDesc: 'Перевод пугающих или болезненных переживаний в сухие теории, схемы и рациональный анализ.',
+    color: 'from-sky-500/20 to-indigo-500/20 border-sky-500/40 text-sky-300',
+    badgeColor: 'bg-sky-500/20 text-sky-300 border-sky-500/30',
+    nodePos: { x: 22, y: 24 },
+    essence: 'Когда реальность становится слишком эмоционально заряженной, болезненной или непредсказуемой, психика «отключает» чувствительность тела и уходит на чердак разума. Вместо того чтобы плакать, злиться или бояться, человек начинает говорить о своей драме сухим языком фактов, ставить себе диагнозы, анализировать причины или уходить в бесконечное планирование.',
+    plus: 'Спасает от мгновенного эмоционального затопления и шока. Дает опору и иллюзию контроля в кризисе: кажется, что если проблему можно разложить по полочкам или составить таблицу — она больше не может тебя разрушить.',
+    minus: 'Чувства нельзя «продумать» — их можно только прожить. Непрожитая боль и злость остаются запертыми в теле, приводя к внутренней пустоте, отчуждению от близких («я всё понимаю головой, но ничего не чувствую») и хроническому напряжению.',
+    markers: [
+      'Речь: «Если посмотреть на это объективно...», «С точки зрения нейробиологии...», «Логично предположить, что...»',
+      'Тело: «говорящая голова» — активная мимика лба и глаз при абсолютно неподвижной, замороженной грудной клетке и зажатом дыхании.',
+      'Поведение: чтение книг по психологии вместо реального разговора о своей обиде.'
+    ],
+    linkedMovies: ['six-feet-under', 'scenes-from-a-marriage']
+  },
+  {
+    id: 'retroflexion',
+    name: 'Ретрофлексия',
+    metaphor: '«Запрет на выдох и разворот энергии на себя»',
+    category: 'Прерывание контакта (Гештальт)',
+    shortDesc: 'Удержание импульса внутри: когда то, что предназначалось внешнему миру, направляется против самого себя.',
+    color: 'from-rose-500/20 to-orange-500/20 border-rose-500/40 text-rose-300',
+    badgeColor: 'bg-rose-500/20 text-rose-300 border-rose-500/30',
+    nodePos: { x: 78, y: 24 },
+    essence: 'В гештальт-подходе это прерывание контакта на стадии действия. Импульс, который изначально должен был быть направлен вовне — крикнуть «не смей так со мной!», расплакаться, попросить о помощи или оттолкнуть — на полпути встречает внутреннюю стену страха или стыда и разворачивается на 180 градусов. Человек делает с собой то, что хотел бы сделать с другим.',
+    plus: 'Позволяет сохранить социальные связи и безопасность там, где прямое проявление агрессии или уязвимости когда-то было наказуемо или грозило отвержением. Помогает выглядеть «собранным» и «выносливым».',
+    minus: 'Огромная цена для тела. Удержанная энергия требует работы мышц-антагонистов: одна часть тела хочет ударить или закричать, а другая её сдерживает. Отсюда психосоматика, аутоагрессия, самобичевание и тотальное истощение.',
+    markers: [
+      'Тело: намертво сжатые челюсти (бруксизм), ком в горле, поднятые «каменные» плечи, привычка кусать губы или сдирать заусенцы.',
+      'Речь: «Я сам(а) во всём виноват(а)», «Надо просто потерпеть», «Не хочу никого грузить своими проблемами».',
+      'Поведение: изнуряющий труд на износ вместо того, чтобы признать бессилие или злость.'
+    ],
+    linkedMovies: ['the-leftovers', 'sharp-objects', 'olive-kitteridge']
+  },
+  {
+    id: 'repression',
+    name: 'Вытеснение',
+    metaphor: '«Захлопнуть дверь в подвал памяти»',
+    category: 'Защиты Эго',
+    shortDesc: 'Неосознанное удаление из памяти и фокуса внимания травмирующих событий, желаний или непереносимых чувств.',
+    color: 'from-purple-500/20 to-violet-500/20 border-purple-500/40 text-purple-300',
+    badgeColor: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
+    nodePos: { x: 18, y: 55 },
+    essence: 'Это не осознанная ложь и не просто «забывчивость». Внутренний цензор психики буквально берет пугающее воспоминание, непереносимое горе или «неприемлемое» желание (например, злость на близкого человека) и сбрасывает его в подвал бессознательного, замуровывая дверь.',
+    plus: 'Экстренная анестезия. Позволяет выжить и сохранить рассудок тогда, когда у психики еще нет ресурсов переварить масштаб катастрофы или детской травмы.',
+    minus: 'То, что заперто в подвале, не исчезает — оно начинает стучать в пол. Вытесненный материал возвращается в виде беспричинной фоновой тревоги, панических атак, навязчивых снов, странных оговорок или внезапных телесных симптомов.',
+    markers: [
+      'Речь: «У меня было абсолютно обычное, нормальное детство, правда, я почти ничего не помню до 12 лет», «Да ничего особенного тогда не случилось».',
+      'Тело: ощущение «ватности», онемение отдельных участков тела, внезапная сонливость при приближении к опасной теме.',
+      'Поведение: забывание важных встреч, имен или деталей конфликта сразу после того, как он произошел.'
+    ],
+    linkedMovies: ['sharp-objects', 'the-leftovers']
+  },
+  {
+    id: 'deflection',
+    name: 'Дефлексия',
+    metaphor: '«Уход от прямого попадания в шутку или смол-ток»',
+    category: 'Прерывание контакта (Гештальт)',
+    shortDesc: 'Снижение градуса эмоционального напряжения и близости через иронию, смену темы, обобщения или суету.',
+    color: 'from-amber-500/20 to-yellow-500/20 border-amber-500/40 text-amber-300',
+    badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+    nodePos: { x: 82, y: 55 },
+    essence: 'Дефлексия работает как невидимый щит под углом: любое прямое чувство (как агрессия, так и нежность, признание или похвала) рикошетит в сторону. Когда разговор становится слишком личным и уязвимым, человек отшучивается, переводит стрелки, начинает говорить «вообще о людях» вместо «о себе» или уходит за чаем.',
+    plus: 'Отличный социальный лубрикант. Позволяет сгладить острые углы, разрядить обстановку с помощью юмора и не вступать в конфликт там, где нет безопасности.',
+    minus: 'Хроническое одиночество среди людей. Из-за того, что энергия постоянно рассеивается мимо цели, человек никогда не попадает в настоящий, глубокий контакт. Остается ощущение «жизни вскользь» и неудовлетворенности.',
+    markers: [
+      'Речь: смех или сарказм сразу после слов о собственной боли; замена «Я» на «Все мы» или «Ну, знаешь, как это бывает у людей...».',
+      'Тело: бегающий взгляд (трудно выдержать прямой зрительный контакт), суетливые движения руками, разворот корпуса вполоборота от собеседника.',
+      'Поведение: обесценивание комплиментов («Ой, да этому свитеру сто лет, купила на распродаже»).'
+    ],
+    linkedMovies: ['six-feet-under', 'scenes-from-a-marriage']
+  },
+  {
+    id: 'introjection',
+    name: 'Интроекция',
+    metaphor: '«Проглоченные целиком правила: "Надо" и "Должен"»',
+    category: 'Прерывание контакта (Гештальт)',
+    shortDesc: 'Усвоение чужих убеждений, норм и оценок без критического «пережевывания» и проверки на совместимость с собой.',
+    color: 'from-emerald-500/20 to-teal-500/20 border-emerald-500/40 text-emerald-300',
+    badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+    nodePos: { x: 30, y: 84 },
+    essence: 'Любая пища — и физическая, и ментальная — нуждается в том, чтобы её раскусили, попробовали на вкус и усвоили только полезное. При интроекции человек «проглатывает» родительские или социальные послания целиком: «хорошие девочки не злятся», «мужчина не имеет права на слабость», «сначала дело — потом чувства». Эти чужеродные конструкции поселяются внутри и выдают себя за собственный голос.',
+    plus: 'Обеспечивает быструю социализацию в детстве и предсказуемость мира. Пока ты следуешь правилам «как надо», ты получаешь одобрение стаи и избегаешь отвержения.',
+    minus: 'Потеря собственных ориентиров и желаний. Человек живет по идеальному чужому сценарию, но внутри задыхается от вины при любой попытке выбрать себя и злится на всех, кто смеет жить «не по правилам».',
+    markers: [
+      'Речь: обилие слов «надо», «должен», «принято», «нельзя», «нормальные люди так не делают».',
+      'Тело: выпрямленная «образцовая» осанка, жесткая шея, ощущение тяжести на плечах (груз чужих ожиданий), трудности с отвращением (сложно сказать «мне это не нравится»).',
+      'Поведение: перфекционизм, синдром самозванца, острое чувство вины за отдых.'
+    ],
+    linkedMovies: ['little-fires-everywhere', 'olive-kitteridge']
+  },
+  {
+    id: 'confluence',
+    name: 'Конфлюэнция (Слияние)',
+    metaphor: '«Где заканчиваюсь я и начинаешься ты?»',
+    category: 'Прерывание контакта (Гештальт)',
+    shortDesc: 'Стирание границ между своим «Я» и другим человеком, группой или средой ради безопасности и избегания разрыва.',
+    color: 'from-indigo-500/20 to-pink-500/20 border-indigo-500/40 text-indigo-300',
+    badgeColor: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
+    nodePos: { x: 70, y: 84 },
+    essence: 'В слиянии исчезает граница контакта: нет ни «Я», ни «Ты», есть только неразделимое «Мы». Человек перестает различать, где его собственные чувства и желания, а где — настроение партнера или мамы. Любое различие во мнениях воспринимается как угроза катастрофы и предательство.',
+    plus: 'Дарит упоительное чувство единства, тепла, сопричастности и безопасности (как у младенца с матерью или у влюбленных в первые недели романа).',
+    minus: 'Невозможность настоящей близости, ведь для встречи нужны двое отдельных людей. В хроническом слиянии любая попытка автономии вызывает панику или глухую обиду («если ты не хочешь того же, что и я, значит, ты меня не любишь»).',
+    markers: [
+      'Речь: постоянное использование «Мы» вместо «Я» («Мы покакали», «Мы с мужем не любим артхаус», «У нас сегодня плохое настроение»).',
+      'Тело: нечувствительность к собственным телесным сигналам (голоду, усталости), пока другой не скажет об этом; подстройка дыхания и позы под партнера.',
+      'Поведение: ожидание, что близкий человек сам угадает твои мысли и потребности без слов.'
+    ],
+    linkedMovies: ['scenes-from-a-marriage', 'little-fires-everywhere']
+  }
+];
+
+// ==========================================
+// БАЗА ДАННЫХ: КИНО-КОПИЛКА (РАЗБОРЫ СЕРИАЛОВ)
+// ==========================================
+const MOVIES_DATA = [
+  {
+    id: 'the-leftovers',
+    title: '«Оставленные»',
+    originalTitle: 'The Leftovers (2014–2017)',
+    characters: 'Нора Дерст и Кевин Гарви',
+    posterGradient: 'from-slate-800 via-indigo-950 to-slate-900',
+    accentColor: 'text-indigo-400',
+    defenses: ['retroflexion', 'repression', 'intellectualization'],
+    themeTag: 'Непрожитое горе и заморозка',
+    sceneContext: 'Внезапный Уход уносит 2% населения Земли без всякой логики и прощания. Нора Дерст в одну секунду теряет мужа и двоих детей за кухонным столом. Спустя три года она работает в департаменте по выплате компенсаций, задавая родственникам ушедших сухие анкетные вопросы, а в секрете нанимает секс-работниц, чтобы те стреляли ей в грудь через бронежилет.',
+    analysisNote: 'Нора — эталонная иллюстрация того, как работает массивная ретрофлексия в сцепке с изоляцией аффекта. Горе такого масштаба невозможно вместить в психику целиком, не разрушившись. Поэтому её ярость и отчаяние не находят адресата во внешнем мире (на кого злиться, если виновных нет?) и разворачиваются внутрь. Выстрел в бронежилет — это отчаянная попытка пробить собственную эмоциональную анестезию через физическую боль и хоть на секунду перевести невыносимую душевную дыру в понятный телесный синяк. Кевин Гарви же справляется с распадом семьи через диссоциацию и сомнамбулизм: всё, что он вытесняет днем в роли шерифа, догоняет его по ночам.',
+    quote: '«Пожалуйста, не говорите мне, что всё будет хорошо. Мне не нужно, чтобы было хорошо. Мне нужно знать, что это реально». '
+  },
+  {
+    id: 'six-feet-under',
+    title: '«Клиент всегда мёртв»',
+    originalTitle: 'Six Feet Under (2001–2005)',
+    characters: 'Дэвид Фишер и Нейт Фишер',
+    posterGradient: 'from-emerald-950 via-slate-900 to-zinc-900',
+    accentColor: 'text-emerald-400',
+    defenses: ['intellectualization', 'deflection', 'introjection'],
+    themeTag: 'Сверхконтроль против страха смерти',
+    sceneContext: 'Внезапная гибель отца семейства оставляет похоронное бюро «Фишер и сыновья» двум братьям-антиподам. Пока в подвале дома ежедневно бальзамируют тела, на кухне кипят невысказанные обиды. Дэвид одержимо выверяет каждую строчку контракта, следит за складками на обивке гробов и цепенеет при любом нарушении этикета, а Нейт пытается отшутиться, убежать на пробежку или раствориться в случайной связи.',
+    analysisNote: 'В доме Фишеров смерть — это семейный бизнес, и чтобы не сойти с ума от ежедневного соприкосновения с конечностью бытия, каждый выбирает свой панцирь. Дэвид уходит в глубокую интеллектуализацию и интроекцию: он проглотил отцовский кодекс «идеального распорядителя» и превратил живую скорбь в безупречную бюрократическую процедуру. Пока ты споришь о стоимости бронзовых ручек для гроба — тебе не нужно встречаться со своим ужасом перед жизнью и собственной подавленной идентичностью. Нейт, напротив, мастер дефлексии: как только близость с Брендой или страх болезни подходят слишком близко к горлу, он сбивает фокус конфликтом, иронией или бегством.',
+    quote: '«Ты не можешь сфотографировать это — оно уже исчезло».'
+  },
+  {
+    id: 'scenes-from-a-marriage',
+    title: '«Сцены из супружеской жизни»',
+    originalTitle: 'Scenes from a Marriage (2021)',
+    characters: 'Джонатан и Мира',
+    posterGradient: 'from-amber-950 via-stone-900 to-slate-950',
+    accentColor: 'text-amber-400',
+    defenses: ['confluence', 'intellectualization', 'deflection'],
+    themeTag: 'Анатомия слияния и страха агрессии',
+    sceneContext: 'Первая серия начинается с визита исследовательницы, которая опрашивает пару об их «успешном современном браке». Джонатан красноречиво, с обаятельной улыбкой и философскими терминами отвечает за двоих, объясняя, какие «мы счастливые и осознанные», пока Мира сидит рядом с застывшим лицом, не решаясь вставить слово и разрушить фасад.',
+    analysisNote: 'Гениальная зарисовка того, как конфлюэнция (слияние) и интеллектуализация медленно удушают живой контакт в паре. Джонатан искренне верит, что они с Мирой — единый организм, но за его блестящими терапевтическими формулировками прячется животный страх заметить, что жена давно отдалилась. В их доме нет места здоровой, прямой злости — любое трение мгновенно сглаживается «понимающими» разговорами или отшучиванием (дефлексия). И когда подавленная энергия наконец прорывается наружу, она не обновляет отношения, а взрывает их до основания.',
+    quote: '«Мы так долго старались не причинить друг другу боль, что в итоге перестали друг друга трогать».'
+  },
+  {
+    id: 'olive-kitteridge',
+    title: '«Что знает Оливия?»',
+    originalTitle: 'Olive Kitteridge (2014)',
+    characters: 'Оливия Киттеридж',
+    posterGradient: 'from-cyan-950 via-slate-900 to-slate-950',
+    accentColor: 'text-cyan-400',
+    defenses: ['retroflexion', 'introjection', 'deflection'],
+    themeTag: 'Колючий панцирь против нежности',
+    sceneContext: 'Учительница математики в маленьком прибрежном городке штата Мэн держит в ежовых рукавицах и учеников, и собственного добродушного мужа Генри, и сына Кристофера. Когда Генри дарит ей открытку на День святого Валентина или когда сын тянется к ней за теплом, Оливия резко одергивает их саркастическим замечанием, а оставшись одна — судорожно прижимает руки к груди.',
+    analysisNote: 'Оливия Киттеридж — портрет человека, для которого собственная нежность и уязвимость страшнее смерти (наследие депрессии и суицида её отца). Её ретрофлексия работает не на удержание злости, а на удержание любви! Любой теплый импульс к мужу или сыну она грубо обрывает на границе контакта и оборачивает колючей критикой (дефлексия через сарказм). Она живет внутри суровых пуританских интроектов «не распускай нюни, делай дело», потому что верит: если она расслабится и позволит себе зависеть от близких, её раздавит в тот миг, когда она их потеряет.',
+    quote: '«Иногда мне кажется, что я просто не умею любить людей так, чтобы им от этого не было больно».'
+  },
+  {
+    id: 'little-fires-everywhere',
+    title: '«И повсюду тлеют пожары»',
+    originalTitle: 'Little Fires Everywhere (2020)',
+    characters: 'Елена Ричардсон',
+    posterGradient: 'from-orange-950 via-red-950 to-slate-950',
+    accentColor: 'text-orange-400',
+    defenses: ['introjection', 'confluence', 'repression'],
+    themeTag: 'Тирания правильности и тень',
+    sceneContext: 'Пригород Шейкер-Хайтс, где регламентирован даже цвет домов и высота газона. Елена Ричардсон встает по будильнику, раскладывает ланч-боксы по линейке, живет по расписанию и требует от четверых детей безупречного соответствия семейному стандарту. Появление свободной художницы Мии Уоррен вызывает у Елены необъяснимую одержимость: от навязчивого желания «спасти» её до стремления уничтожить.',
+    analysisNote: 'Елена — живой памятник тотальной интроекции и принудительного слияния с семьей. В юности она вытеснила собственные мечты и бунт, положив жизнь на алтарь «как должно быть у правильной матери и жены». Но вытесненное никуда не исчезает: встреча с Мией (которая живет из собственных желаний, а не из чувства долга) поднимает со дна психики Елены огромную зависть и ярость. Отношения с младшей дочерью Иззи рушатся именно потому, что Иззи отказывается входить с матерью в конфлюэнцию и подсвечивает всю фальшь семейного фасада.',
+    quote: '«Я пожертвовала всем ради этой семьи! — Но тебя никто об этом не просил».'
+  },
+  {
+    id: 'sharp-objects',
+    title: '«Острые предметы»',
+    originalTitle: 'Sharp Objects (2018)',
+    characters: 'Камилла Прикер и Адора Креллин',
+    posterGradient: 'from-rose-950 via-purple-950 to-slate-950',
+    accentColor: 'text-rose-400',
+    defenses: ['retroflexion', 'repression', 'confluence'],
+    themeTag: 'Аутоагрессия и непереваренная травма',
+    sceneContext: 'Журналистка Камилла Прикер возвращается в душный родной городок Уинд-Гэп расследовать убийства девочек. Поселившись в викторианском особняке своей матери Адоры, Камилла прячет под длинными рукавами кожу, сплошь покрытую вырезанными словами («исчезни», «грязь», «неправильная»), и глушит вспышки детских флешбэков бурбоном.',
+    analysisNote: 'Экстремальный, клинически точный показ того, во что превращается ретрофлексия в условиях токсичного симбиоза (слияния) с холодной, нарциссической матерью. В доме Адоры ребенку было запрещено злиться, протестовать и иметь отдельное тело — любая автономия наказывалась отвержением. Не имея возможности направить праведный гнев на мать и защитить свои границы вовне, Камилла буквально разворачивает острие против собственной кожи. Слова, которые она не смогла выкрикнуть в лицо семье, оказались высечены на её собственном теле, а память о смерти сестры годами удерживалась за плотиной вытеснения.',
+    quote: '«Иногда, если ты позволишь кому-то заботиться о себе, это убьет тебя быстрее, чем одиночество».'
+  }
+];
+
+// ==========================================
+// ВОПРОСЫ ТЕСТА «ЧТО ФОНИТ СЕГОДНЯ?»
+// ==========================================
+const QUIZ_QUESTIONS = [
+  {
+    id: 1,
+    category: 'Реакция на внезапный стресс',
+    question: 'На работе или в делах внезапно всё летит кувырком, прилетает критика или рушится план. Ваша первая автоматическая реакция:',
+    options: [
+      {
+        text: 'Отключаю эмоции и ухожу в холодный анализ: строю схемы, ищу логические объяснения и регламенты.',
+        weights: { intellectualization: 3, introjection: 1 }
+      },
+      {
+        text: 'Молча сжимаю зубы, никому не жалуюсь и взваливаю всё на себя: «надо просто стиснуть волю и вывезти».',
+        weights: { retroflexion: 3, introjection: 1 }
+      },
+      {
+        text: 'Отшучиваюсь с иронией или перевожу тему, чтобы сбить градус напряжения в разговоре.',
+        weights: { deflection: 3 }
+      },
+      {
+        text: 'Внезапно забываю детали разговора, откладываю задачу в дальний ящик, как будто её не было.',
+        weights: { repression: 3, deflection: 1 }
+      }
+    ]
+  },
+  {
+    id: 2,
+    category: 'Контакт с телом в конце дня',
+    question: 'Прислушайтесь к своему телу прямо сейчас. Что в нём откликается сильнее всего?',
+    options: [
+      {
+        text: 'Каменные плечи, сжатая челюсть или ком в горле — ощущение, что я весь день сдерживал(а) выдох.',
+        weights: { retroflexion: 3 }
+      },
+      {
+        text: 'Чувствую себя «говорящей головой»: в мыслях гудит рой идей и диалогов, а тело ниже шеи почти не ощущается.',
+        weights: { intellectualization: 3, repression: 1 }
+      },
+      {
+        text: 'Тяжесть долга на спине: сил нет, но внутри звучит строгий голос «ты не имеешь права расслабляться, пока не доделаешь».',
+        weights: { introjection: 3, retroflexion: 1 }
+      },
+      {
+        text: 'Странная рассеянность или «ватность»: трудно понять, чего я вообще хочу — поесть, поспать или побыть в тишине.',
+        weights: { confluence: 2, repression: 2 }
+      }
+    ]
+  },
+  {
+    id: 3,
+    category: 'Общение и близость',
+    question: 'Когда близкий человек обижает вас или, наоборот, разговор становится слишком личным и уязвимым:',
+    options: [
+      {
+        text: 'Я начинаю объяснять ему «с точки зрения психологии», почему он так поступил, вместо того чтобы сказать «мне больно».',
+        weights: { intellectualization: 3, deflection: 1 }
+      },
+      {
+        text: 'Сразу думаю: «Главное — не поссориться». Подстраиваюсь под его настроение и сглаживаю углы, теряя себя.',
+        weights: { confluence: 3 }
+      },
+      {
+        text: 'Перевожу всё в сарказм, мем или общие фразы («ну, все люди иногда устают...»), уводя фокус от себя.',
+        weights: { deflection: 3 }
+      },
+      {
+        text: 'Начинаю винить во всём себя («я сам(а) спровоцировал(а), со мной что-то не так») и замыкаюсь в раковине.',
+        weights: { retroflexion: 3, introjection: 1 }
+      }
+    ]
+  },
+  {
+    id: 4,
+    category: 'Внутренний монолог',
+    question: 'Какая фраза точнее всего описывает ваш сегодняшний внутренний фон?',
+    options: [
+      {
+        text: '«Нужно всё делать правильно и по уму, хорошие специалисты / партнеры не подводят других».',
+        weights: { introjection: 3 }
+      },
+      {
+        text: '«Если я пойму причинно-следственную связь своей тревоги, она наконец-то пройдёт».',
+        weights: { intellectualization: 3 }
+      },
+      {
+        text: '«Мне трудно отделить своё состояние от атмосферы вокруг — если рядом кому-то плохо, я тут же тону в этом».',
+        weights: { confluence: 3 }
+      },
+      {
+        text: '«Да всё нормально, ничего страшного не происходит, просто почему-то на душе фоновая тревога без причины».',
+        weights: { repression: 3 }
+      }
+    ]
+  }
+];
+
+// ==========================================
+// СИСТЕМА АЧИВОК (БЕЙДЖЕЙ САМОПОЗНАНИЯ)
+// ==========================================
+const BADGES_CONFIG = [
+  {
+    id: 'agent_undercover',
+    title: 'Агент под прикрытием',
+    desc: 'Пройти тест «Что фонит сегодня?» в первый раз и бережно заглянуть под капот психики.',
+    icon: Compass,
+    category: 'Рефлексия'
+  },
+  {
+    id: 'shield_collector',
+    title: 'Коллекционер щитов',
+    desc: 'Изучить карточки хотя бы 4 защитных механизмов в Каталоге.',
+    icon: Shield,
+    category: 'Исследование'
+  },
+  {
+    id: 'couch_therapy',
+    title: 'Диванная терапия',
+    desc: 'Открыть и прочитать глубокие разборы 3 сериалов в Кино-копилке.',
+    icon: Film,
+    category: 'Кино-оптика'
+  },
+  {
+    id: 'anti_robot',
+    title: 'Анти-робот',
+    desc: 'Обнаружить у себя Интеллектуализацию или Ретрофлексию и перейти из результата к разбору.',
+    icon: HeartHandshake,
+    category: 'Осознанность'
+  },
+  {
+    id: 'mind_cartographer',
+    title: 'Картограф психики',
+    desc: 'Исследовать интерактивную схему (Mind Map) защитных механизмов.',
+    icon: Network,
+    category: 'Исследование'
+  },
+  {
+    id: 'pause_master',
+    title: 'Мастер паузы',
+    desc: 'Пройти самопроверку 2 или более раз, отслеживая динамику своего состояния.',
+    icon: BatteryCharging,
+    category: 'Рефлексия'
+  }
+];
+
+// ==========================================
+// ГЛАВНЫЙ КОМПОНЕНТ ПРИЛОЖЕНИЯ
+// ==========================================
+export default function App() {
+  // Навигация по вкладкам: 'catalog' | 'quiz' | 'movies' | 'profile'
+  const [activeTab, setActiveTab] = useState('catalog');
+
+  // Модальное окно онбординга
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardingStep, setOnboardingStep] = useState(0);
+
+  // Состояния Вкладки 1: Каталог
+  const [catalogView, setCatalogView] = useState('list'); // 'list' | 'mindmap'
+  const [searchQuery, setSearchQuery] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('Все');
+  const [selectedDefense, setSelectedDefense] = useState(null);
+
+  // Состояния Вкладки 2: Тест
+  const [quizStep, setQuizStep] = useState(0);
+  const [quizAnswers, setQuizAnswers] = useState([]);
+  const [quizResult, setQuizResult] = useState(null);
+
+  // Состояния Вкладки 3: Кино-копилка
+  const [movieDefenseFilter, setMovieDefenseFilter] = useState('all');
+  const [selectedMovie, setSelectedMovie] = useState(null);
+
+  // Состояния Прогресса и Геймификации (с сохранением в localStorage)
+  const [viewedDefenses, setViewedDefenses] = useState([]);
+  const [viewedMovies, setViewedMovies] = useState([]);
+  const [usedMindMap, setUsedMindMap] = useState(false);
+  const [testHistory, setTestHistory] = useState([]);
+  const [unlockedBadges, setUnlockedBadges] = useState([]);
+  const [toastNotification, setToastNotification] = useState(null);
+
+  // Загрузка из localStorage при первом рендере
+  useEffect(() => {
+    try {
+      const savedOnboarding = localStorage.getItem('kz_onboarding_seen');
+      if (!savedOnboarding) {
+        setShowOnboarding(true);
+      }
+
+      const savedDefenses = JSON.parse(localStorage.getItem('kz_viewed_defenses') || '[]');
+      const savedMovies = JSON.parse(localStorage.getItem('kz_viewed_movies') || '[]');
+      const savedHistory = JSON.parse(localStorage.getItem('kz_test_history') || '[]');
+      const savedBadges = JSON.parse(localStorage.getItem('kz_unlocked_badges') || '[]');
+      const savedMindMap = localStorage.getItem('kz_used_mindmap') === 'true';
+
+      setViewedDefenses(savedDefenses);
+      setViewedMovies(savedMovies);
+      setTestHistory(savedHistory);
+      setUnlockedBadges(savedBadges);
+      setUsedMindMap(savedMindMap);
+    } catch (e) {
+      console.error('Ошибка чтения localStorage:', e);
+    }
+  }, []);
+
+  // Всплывающее уведомление (Тост)
+  const triggerToast = (title, subtitle) => {
+    setToastNotification({ title, subtitle });
+    setTimeout(() => {
+      setToastNotification(null);
+    }, 3800);
+  };
+
+  // Автоматическая проверка и разблокировка ачивок
+  useEffect(() => {
+    const newBadges = [...unlockedBadges];
+    let newlyUnlocked = null;
+
+    const tryUnlock = (id, title) => {
+      if (!newBadges.includes(id)) {
+        newBadges.push(id);
+        newlyUnlocked = title;
+      }
+    };
+
+    if (testHistory.length >= 1) {
+      tryUnlock('agent_undercover', 'Агент под прикрытием');
+    }
+    if (testHistory.length >= 2) {
+      tryUnlock('pause_master', 'Мастер паузы');
+    }
+    if (viewedDefenses.length >= 4) {
+      tryUnlock('shield_collector', 'Коллекционер щитов');
+    }
+    if (viewedMovies.length >= 3) {
+      tryUnlock('couch_therapy', 'Диванная терапия');
+    }
+    if (usedMindMap) {
+      tryUnlock('mind_cartographer', 'Картограф психики');
+    }
+    if (
+      testHistory.some(
+        (h) => h.primary === 'intellectualization' || h.primary === 'retroflexion'
+      ) &&
+      viewedDefenses.length >= 1
+    ) {
+      tryUnlock('anti_robot', 'Анти-робот');
+    }
+
+    if (newlyUnlocked) {
+      setUnlockedBadges(newBadges);
+      try {
+        localStorage.setItem('kz_unlocked_badges', JSON.stringify(newBadges));
+      } catch (e) {}
+      triggerToast(`Новая ачивка: «${newlyUnlocked}»`, 'Загляните во вкладку «Моя карта»');
+    }
+  }, [viewedDefenses, viewedMovies, testHistory, usedMindMap]);
+
+  // Закрытие онбординга
+  const handleCloseOnboarding = (targetTab = null) => {
+    setShowOnboarding(false);
+    setOnboardingStep(0);
+    try {
+      localStorage.setItem('kz_onboarding_seen', 'true');
+    } catch (e) {}
+    if (targetTab) {
+      setActiveTab(targetTab);
+    }
+  };
+
+  // Открытие детальной карточки защиты
+  const openDefenseDetail = (defenseId) => {
+    const found = DEFENSES_DATA.find((d) => d.id === defenseId);
+    if (!found) return;
+    setSelectedDefense(found);
+    setActiveTab('catalog');
+
+    if (!viewedDefenses.includes(defenseId)) {
+      const updated = [...viewedDefenses, defenseId];
+      setViewedDefenses(updated);
+      try {
+        localStorage.setItem('kz_viewed_defenses', JSON.stringify(updated));
+      } catch (e) {}
+    }
+  };
+
+  // Открытие детального разбора сериала в Кино-копилке
+  const openMovieDetail = (movieId) => {
+    const found = MOVIES_DATA.find((m) => m.id === movieId);
+    if (!found) return;
+    setSelectedDefense(null);
+    setSelectedMovie(found);
+    setActiveTab('movies');
+
+    if (!viewedMovies.includes(movieId)) {
+      const updated = [...viewedMovies, movieId];
+      setViewedMovies(updated);
+      try {
+        localStorage.setItem('kz_viewed_movies', JSON.stringify(updated));
+      } catch (e) {}
+    }
+  };
+
+  // Переключение в режим Mind Map
+  const handleToggleCatalogView = (viewMode) => {
+    setCatalogView(viewMode);
+    if (viewMode === 'mindmap' && !usedMindMap) {
+      setUsedMindMap(true);
+      try {
+        localStorage.setItem('kz_used_mindmap', 'true');
+      } catch (e) {}
+    }
+  };
+
+  // Логика ответа на вопрос в тесте
+  const handleAnswerOption = (weights) => {
+    const updatedAnswers = [...quizAnswers, weights];
+    if (quizStep < QUIZ_QUESTIONS.length - 1) {
+      setQuizAnswers(updatedAnswers);
+      setQuizStep(quizStep + 1);
+    } else {
+      // Подсчет результатов теста
+      const totals = {};
+      DEFENSES_DATA.forEach((d) => (totals[d.id] = 0));
+
+      updatedAnswers.forEach((ans) => {
+        Object.entries(ans).forEach(([defId, score]) => {
+          totals[defId] = (totals[defId] || 0) + score;
+        });
+      });
+
+      const sortedIds = Object.keys(totals).sort((a, b) => totals[b] - totals[a]);
+      const primaryDefense = DEFENSES_DATA.find((d) => d.id === sortedIds[0]);
+      const secondaryDefense = DEFENSES_DATA.find((d) => d.id === sortedIds[1]);
+
+      const resultObj = {
+        id: Date.now(),
+        date: new Date().toLocaleDateString('ru-RU', {
+          day: 'numeric',
+          month: 'short',
+          hour: '2-digit',
+          minute: '2-digit'
+        }),
+        primary: primaryDefense.id,
+        secondary: secondaryDefense.id,
+        primaryData: primaryDefense,
+        secondaryData: secondaryDefense
+      };
+
+      setQuizResult(resultObj);
+      const newHistory = [resultObj, ...testHistory].slice(0, 10);
+      setTestHistory(newHistory);
+      try {
+        localStorage.setItem('kz_test_history', JSON.stringify(newHistory));
+      } catch (e) {}
+    }
+  };
+
+  const resetQuiz = () => {
+    setQuizStep(0);
+    setQuizAnswers([]);
+    setQuizResult(null);
+  };
+
+  // Фильтрация защит в каталоге
+  const filteredDefenses = useMemo(() => {
+    return DEFENSES_DATA.filter((item) => {
+      const matchesCategory = categoryFilter === 'Все' || item.category === categoryFilter;
+      const q = searchQuery.toLowerCase().trim();
+      const matchesSearch =
+        !q ||
+        item.name.toLowerCase().includes(q) ||
+        item.metaphor.toLowerCase().includes(q) ||
+        item.shortDesc.toLowerCase().includes(q) ||
+        item.essence.toLowerCase().includes(q);
+      return matchesCategory && matchesSearch;
+    });
+  }, [searchQuery, categoryFilter]);
+
+  // Фильтрация сериалов в Кино-копилке
+  const filteredMovies = useMemo(() => {
+    if (movieDefenseFilter === 'all') return MOVIES_DATA;
+    return MOVIES_DATA.filter((m) => m.defenses.includes(movieDefenseFilter));
+  }, [movieDefenseFilter]);
+
+  // Копирование результата для Telegram
+  const handleShareResult = (textToShare) => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(textToShare);
+      triggerToast('Скопировано в буфер обмена!', 'Теперь можно отправить себе в Избранное или друзьям в Telegram');
+    } else {
+      triggerToast('Готово к отправке', 'Текст сформирован для пересылки');
+    }
+  };
+
+  // Вычисление заряда «Батарейки осознанности»
+  const awarenessBattery = useMemo(() => {
+    const points =
+      viewedDefenses.length * 10 +
+      viewedMovies.length * 10 +
+      Math.min(testHistory.length * 20, 40);
+    return Math.min(100, Math.max(15, points));
+  }, [viewedDefenses, viewedMovies, testHistory]);
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-start font-sans selection:bg-indigo-500/30">
+      {/* Имитация контейнера Telegram Mini App (мобильный фокус + адаптив на десктопе) */}
+      <div className="w-full max-w-md min-h-screen bg-slate-900/90 border-x border-slate-800/80 flex flex-col relative pb-24 shadow-2xl">
+        
+        {/* ВСПЛЫВАЮЩИЙ ТОСТ */}
+        {toastNotification && (
+          <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-sm bg-indigo-950/95 border border-indigo-400/40 text-slate-100 px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3 backdrop-blur-md animate-bounce">
+            <div className="p-2 rounded-xl bg-indigo-500/20 text-indigo-300 shrink-0">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <div className="text-xs">
+              <div className="font-semibold text-indigo-200">{toastNotification.title}</div>
+              <div className="text-slate-300 mt-0.5">{toastNotification.subtitle}</div>
+            </div>
+          </div>
+        )}
+
+        {/* ВЕРХНЯЯ ШАПКА TMA */}
+        <header className="sticky top-0 z-30 bg-slate-900/85 backdrop-blur-xl border-b border-slate-800/80 px-4 py-3.5 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500/30 to-purple-500/30 border border-indigo-400/30 flex items-center justify-center text-indigo-300 shadow-inner">
+              <Brain className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <h1 className="font-bold text-base tracking-tight text-slate-100">Карта Защит</h1>
+                <span className="text-[10px] font-medium uppercase tracking-wider px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                  Атлас
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-400">Психология и кино-разборы</p>
+            </div>
+          </div>
+
+          <button
+            onClick={() => {
+              setOnboardingStep(0);
+              setShowOnboarding(true);
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700/80 border border-slate-700/70 text-xs text-slate-300 transition active:scale-95"
+          >
+            <Info className="w-3.5 h-3.5 text-indigo-400" />
+            <span>О проекте</span>
+          </button>
+        </header>
+
+        {/* ОСНОВНОЙ КОНТЕНТ ВКЛАДОК */}
+        <main className="flex-1 px-4 pt-4 pb-6 overflow-x-hidden">
+          
+          {/* ========================================== */}
+          {/* ВКЛАДКА 1: КАТАЛОГ (КАРТА ЗАЩИТ)           */}
+          {/* ========================================== */}
+          {activeTab === 'catalog' && (
+            <div className="space-y-4">
+              {/* Баннер-подводка */}
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-slate-800/90 via-slate-800/60 to-indigo-950/40 border border-slate-700/70 relative overflow-hidden">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h2 className="text-sm font-semibold text-slate-100 flex items-center gap-1.5">
+                      <Shield className="w-4 h-4 text-indigo-400" />
+                      Анатомия психологических защит
+                    </h2>
+                    <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                      Защиты — это не «баг», а бережный предохранитель вашей психики. Исследуйте, как они спасают нас от боли и какую цену берут взамен.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Переключатель: Список vs Интерактивная схема */}
+                <div className="mt-3.5 flex bg-slate-900/90 p-1 rounded-xl border border-slate-800">
+                  <button
+                    onClick={() => handleToggleCatalogView('list')}
+                    className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 transition ${
+                      catalogView === 'list'
+                        ? 'bg-indigo-600 text-white shadow'
+                        : 'text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    <Layers className="w-3.5 h-3.5" />
+                    Список карточек
+                  </button>
+                  <button
+                    onClick={() => handleToggleCatalogView('mindmap')}
+                    className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 transition ${
+                      catalogView === 'mindmap'
+                        ? 'bg-indigo-600 text-white shadow'
+                        : 'text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    <Network className="w-3.5 h-3.5" />
+                    Интерактивная схема
+                  </button>
+                </div>
+              </div>
+
+              {/* РЕЖИМ 1: ИНТЕРАКТИВНАЯ СХЕМА (MIND MAP) */}
+              {catalogView === 'mindmap' ? (
+                <div className="p-4 rounded-2xl bg-slate-950/90 border border-slate-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-indigo-300 flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      Нажмите на любой узел карты для разбора
+                    </span>
+                    <span className="text-[11px] text-slate-400">6 узлов</span>
+                  </div>
+
+                  {/* SVG + Интерактивные узлы на русском */}
+                  <div className="relative w-full h-80 rounded-xl bg-gradient-to-b from-slate-900 to-slate-950 border border-slate-800/80 overflow-hidden select-none">
+                    <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                      <defs>
+                        <radialGradient id="centerGlow" cx="50%" cy="50%" r="50%">
+                          <stop offset="0%" stopColor="rgba(99, 102, 241, 0.35)" />
+                          <stop offset="100%" stopColor="rgba(15, 23, 42, 0)" />
+                        </radialGradient>
+                      </defs>
+                      <circle cx="50" cy="52" r="35" fill="url(#centerGlow)" />
+
+                      {/* Соединительные лучи от центра к защитам */}
+                      {DEFENSES_DATA.map((def) => (
+                        <line
+                          key={def.id}
+                          x1="50"
+                          y1="52"
+                          x2={def.nodePos.x}
+                          y2={def.nodePos.y}
+                          stroke="rgba(148, 163, 184, 0.3)"
+                          strokeWidth="0.6"
+                          strokeDasharray="1.5 1.5"
+                        />
+                      ))}
+                    </svg>
+
+                    {/* Центральный узел */}
+                    <div
+                      style={{ left: '50%', top: '52%' }}
+                      className="absolute -translate-x-1/2 -translate-y-1/2 z-10 px-3.5 py-2 rounded-2xl bg-indigo-600/90 border border-indigo-300/60 shadow-lg shadow-indigo-500/30 text-center pointer-events-none"
+                    >
+                      <div className="text-[10px] uppercase tracking-wider text-indigo-200 font-semibold">
+                        Ядро психики
+                      </div>
+                      <div className="text-xs font-bold text-white whitespace-nowrap">
+                        Защитный щит
+                      </div>
+                    </div>
+
+                    {/* Кликабельные узлы механизмов */}
+                    {DEFENSES_DATA.map((def) => {
+                      const isSeen = viewedDefenses.includes(def.id);
+                      return (
+                        <button
+                          key={def.id}
+                          onClick={() => openDefenseDetail(def.id)}
+                          style={{ left: `${def.nodePos.x}%`, top: `${def.nodePos.y}%` }}
+                          className={`absolute -translate-x-1/2 -translate-y-1/2 z-20 px-2.5 py-1.5 rounded-xl border text-left transition-all duration-200 hover:scale-105 active:scale-95 shadow-md max-w-[132px] bg-slate-900/95 ${def.badgeColor}`}
+                        >
+                          <div className="flex items-center justify-between gap-1">
+                            <span className="text-[11px] font-bold truncate">{def.name}</span>
+                            {isSeen && <Check className="w-3 h-3 shrink-0 opacity-80" />}
+                          </div>
+                          <div className="text-[9px] text-slate-300/90 truncate mt-0.5">
+                            {def.metaphor.replace(/[«»]/g, '')}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <p className="text-[11px] text-slate-400 text-center leading-relaxed">
+                    Верхний ярус — бегство в голову и удержание импульса; средний — работа с памятью и фокусом; нижний — границы между «Я» и миром.
+                  </p>
+                </div>
+              ) : (
+                /* РЕЖИМ 2: ПОИСК, ФИЛЬТРЫ И СПИСОК КАРТОЧЕК */
+                <>
+                  {/* Поиск */}
+                  <div className="relative">
+                    <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Найти защиту, симптом (напр. «челюсть», «надо»)..."
+                      className="w-full pl-10 pr-8 py-2.5 bg-slate-800/80 border border-slate-700/80 rounded-xl text-xs text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-indigo-500"
+                    />
+                    {searchQuery && (
+                      <button
+                        onClick={() => setSearchQuery('')}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Фильтры категорий */}
+                  <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+                    {['Все', 'Прерывание контакта (Гештальт)', 'Защиты Эго'].map((cat) => (
+                      <button
+                        key={cat}
+                        onClick={() => setCategoryFilter(cat)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap border transition ${
+                          categoryFilter === cat
+                            ? 'bg-indigo-500/20 border-indigo-400/50 text-indigo-200'
+                            : 'bg-slate-800/60 border-slate-700/60 text-slate-400 hover:text-slate-200'
+                        }`}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Список карточек */}
+                  <div className="space-y-3">
+                    {filteredDefenses.map((def) => {
+                      const isRead = viewedDefenses.includes(def.id);
+                      return (
+                        <div
+                          key={def.id}
+                          onClick={() => openDefenseDetail(def.id)}
+                          className={`p-4 rounded-2xl bg-gradient-to-br ${def.color} border cursor-pointer transition-all hover:translate-y-[-1px] active:scale-[0.99]`}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <span className="inline-block text-[10px] font-medium px-2 py-0.5 rounded-md bg-slate-900/70 text-slate-300 border border-slate-700/60 mb-1.5">
+                                {def.category}
+                              </span>
+                              <h3 className="text-base font-bold text-slate-100 flex items-center gap-2">
+                                {def.name}
+                                {isRead && (
+                                  <span className="text-[10px] font-normal px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                    Изучено
+                                  </span>
+                                )}
+                              </h3>
+                              <p className="text-xs font-medium text-indigo-200/90 mt-0.5">
+                                {def.metaphor}
+                              </p>
+                            </div>
+                            <div className="p-2 rounded-xl bg-slate-900/50 text-slate-300">
+                              <ChevronRight className="w-4 h-4" />
+                            </div>
+                          </div>
+
+                          <p className="text-xs text-slate-300 mt-2.5 leading-relaxed">
+                            {def.shortDesc}
+                          </p>
+
+                          <div className="mt-3 pt-2.5 border-t border-slate-700/40 flex items-center justify-between text-[11px] text-slate-300">
+                            <span className="flex items-center gap-1.5">
+                              <Clapperboard className="w-3.5 h-3.5 text-indigo-300" />
+                              Кино-разборов: {def.linkedMovies.length}
+                            </span>
+                            <span className="font-medium underline decoration-dotted">
+                              Открыть карточку ➔
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {filteredDefenses.length === 0 && (
+                      <div className="text-center py-8 text-slate-400 text-xs">
+                        По вашему запросу ничего не найдено. Попробуйте сбросить фильтр.
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* ========================================== */}
+          {/* ВКЛАДКА 2: ТЕСТ «ЧТО ФОНИТ СЕГОДНЯ?»       */}
+          {/* ========================================== */}
+          {activeTab === 'quiz' && (
+            <div className="space-y-4">
+              {!quizResult ? (
+                /* ЭКРАН ПРОХОЖДЕНИЯ ВОПРОСОВ */
+                <div className="p-5 rounded-2xl bg-slate-800/70 border border-slate-700/80 space-y-5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-indigo-300 uppercase tracking-wider flex items-center gap-1.5">
+                      <Compass className="w-4 h-4" />
+                      Самопроверка • Шаг {quizStep + 1} из {QUIZ_QUESTIONS.length}
+                    </span>
+                    {quizStep > 0 && (
+                      <button
+                        onClick={resetQuiz}
+                        className="text-xs text-slate-400 hover:text-slate-200 flex items-center gap-1"
+                      >
+                        <RotateCcw className="w-3 h-3" />
+                        Сначала
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Прогресс-бар */}
+                  <div className="w-full h-2 bg-slate-900 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-300"
+                      style={{ width: `${((quizStep + 1) / QUIZ_QUESTIONS.length) * 100}%` }}
+                    />
+                  </div>
+
+                  <div>
+                    <div className="text-[11px] font-medium text-slate-400 mb-1">
+                      {QUIZ_QUESTIONS[quizStep].category}
+                    </div>
+                    <h2 className="text-base font-bold text-slate-100 leading-snug">
+                      {QUIZ_QUESTIONS[quizStep].question}
+                    </h2>
+                  </div>
+
+                  <div className="space-y-2.5 pt-1">
+                    {QUIZ_QUESTIONS[quizStep].options.map((opt, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => handleAnswerOption(opt.weights)}
+                        className="w-full text-left p-3.5 rounded-xl bg-slate-900/90 hover:bg-indigo-950/60 border border-slate-700/80 hover:border-indigo-500/60 transition group flex items-start gap-3 active:scale-[0.99]"
+                      >
+                        <span className="w-6 h-6 rounded-lg bg-slate-800 group-hover:bg-indigo-500/30 text-slate-300 group-hover:text-indigo-200 text-xs font-bold flex items-center justify-center shrink-0 mt-0.5 border border-slate-700">
+                          {['А', 'Б', 'В', 'Г'][idx]}
+                        </span>
+                        <span className="text-xs text-slate-200 leading-relaxed">{opt.text}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="pt-2 text-[11px] text-slate-400 text-center">
+                    Здесь нет «правильных» или «стыдных» ответов — выбирайте то, что ближе к вашему сегодняшнему состоянию.
+                  </div>
+                </div>
+              ) : (
+                /* ЭКРАН РЕЗУЛЬТАТА ТЕСТА (ПО ТЗ) */
+                <div className="space-y-4 animate-fadeIn">
+                  {/* Шапка результата */}
+                  <div className="p-5 rounded-2xl bg-gradient-to-br from-indigo-950/80 via-slate-800/90 to-slate-900 border border-indigo-500/40 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                        🧠🌿 Бережная рефлексия • {quizResult.date}
+                      </span>
+                      <button
+                        onClick={resetQuiz}
+                        className="text-xs text-slate-300 hover:text-white flex items-center gap-1 bg-slate-800/80 px-2.5 py-1 rounded-lg border border-slate-700"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                        Заново
+                      </button>
+                    </div>
+
+                    <h2 className="text-lg font-bold text-white leading-snug">
+                      Похоже, сегодня у вас фонит{' '}
+                      <span className="text-indigo-300 underline decoration-indigo-500/50">
+                        {quizResult.primaryData.name}
+                      </span>{' '}
+                      в связке с механизмом{' '}
+                      <span className="text-purple-300">«{quizResult.secondaryData.name}»</span>
+                    </h2>
+
+                    <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-700/70 text-xs text-slate-200 leading-relaxed">
+                      В моменты перегрузки наша психика включает предохранители. Вместо того чтобы сталкиваться с переполняющими чувствами или усталостью напрямую, нервная система выбирает проверенный щит. Это нормально — так ваша психика заботится о вашей сохранности прямо сейчас.
+                    </div>
+                  </div>
+
+                  {/* Карточки обнаруженных защит с переходом в Каталог */}
+                  <div className="space-y-3">
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 px-1">
+                      Активные механизмы прямо сейчас:
+                    </h3>
+
+                    {[quizResult.primaryData, quizResult.secondaryData].map((def, idx) => (
+                      <div
+                        key={def.id}
+                        className={`p-4 rounded-2xl bg-gradient-to-br ${def.color} border space-y-2.5`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded bg-slate-900/70 text-slate-200">
+                            {idx === 0 ? 'Ведущая защита' : 'Второй эшелон'}
+                          </span>
+                          <span className="text-[11px] text-slate-300">{def.category}</span>
+                        </div>
+
+                        <div>
+                          <h4 className="text-base font-bold text-white">{def.name}</h4>
+                          <p className="text-xs text-indigo-200 font-medium">{def.metaphor}</p>
+                        </div>
+
+                        <p className="text-xs text-slate-200 leading-relaxed">{def.shortDesc}</p>
+
+                        <button
+                          onClick={() => openDefenseDetail(def.id)}
+                          className="w-full py-2 px-3 rounded-xl bg-slate-900/80 hover:bg-slate-900 text-xs font-semibold text-indigo-300 border border-slate-700/80 flex items-center justify-center gap-1.5 transition"
+                        >
+                          <span>Открыть в Каталоге защит</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Мостик в Кино-копилку */}
+                  {(() => {
+                    const matchedMovieId = quizResult.primaryData.linkedMovies[0];
+                    const matchedMovie = MOVIES_DATA.find((m) => m.id === matchedMovieId);
+                    if (!matchedMovie) return null;
+                    return (
+                      <div className="p-4 rounded-2xl bg-slate-800/80 border border-slate-700/80 space-y-3">
+                        <div className="flex items-center gap-2 text-xs font-semibold text-amber-300">
+                          <Clapperboard className="w-4 h-4" />
+                          <span>Где это встречается в кино:</span>
+                        </div>
+                        <div>
+                          <div className="text-sm font-bold text-white">
+                            {matchedMovie.title} — {matchedMovie.characters}
+                          </div>
+                          <p className="text-xs text-slate-300 mt-1 line-clamp-3 leading-relaxed">
+                            {matchedMovie.analysisNote}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => openMovieDetail(matchedMovie.id)}
+                          className="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20 transition"
+                        >
+                          <Film className="w-4 h-4" />
+                          <span>🎬 Посмотреть разбор сцены в Кино-копилке</span>
+                        </button>
+                      </div>
+                    );
+                  })()}
+
+                  {/* Кнопки шеринга и возврата к карте */}
+                  <div className="flex gap-2 pt-1">
+                    <button
+                      onClick={() => {
+                        handleToggleCatalogView('mindmap');
+                        setActiveTab('catalog');
+                      }}
+                      className="flex-1 py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium text-slate-200 flex items-center justify-center gap-1.5"
+                    >
+                      <Network className="w-4 h-4 text-indigo-400" />
+                      К интерактивной Карте
+                    </button>
+                    <button
+                      onClick={() =>
+                        handleShareResult(
+                          `🧠 Моя самопроверка в «Карте Защит»:\nСегодня у меня фонит ${quizResult.primaryData.name} (${quizResult.primaryData.metaphor}) в связке с механизмом «${quizResult.secondaryData.name}».`
+                        )
+                      }
+                      className="py-2.5 px-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium text-indigo-300 flex items-center justify-center gap-1.5"
+                    >
+                      <Share2 className="w-4 h-4" />
+                      Поделиться
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ========================================== */}
+          {/* ВКЛАДКА 3: КИНО-КОПИЛКА (МАСТЕРСКАЯ)       */}
+          {/* ========================================== */}
+          {activeTab === 'movies' && (
+            <div className="space-y-4">
+              {/* Заголовок раздела */}
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-indigo-950/60 via-slate-800/80 to-slate-900 border border-slate-700/80">
+                <div className="flex items-center gap-2 text-indigo-300 text-xs font-semibold uppercase tracking-wider">
+                  <Film className="w-4 h-4" />
+                  Мастерская психологических разборов
+                </div>
+                <h2 className="text-base font-bold text-white mt-1">
+                  Кино-копилка: как герои справляются с невыносимым
+                </h2>
+                <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                  На чужих историях защитные механизмы видны как под увеличительным стеклом. Выберите защиту или сериал, чтобы прочитать заметки на полях.
+                </p>
+              </div>
+
+              {/* Фильтр по защитным механизмам */}
+              <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+                <button
+                  onClick={() => setMovieDefenseFilter('all')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap border transition ${
+                    movieDefenseFilter === 'all'
+                      ? 'bg-indigo-600 border-indigo-400 text-white'
+                      : 'bg-slate-800/70 border-slate-700 text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  Все сериалы ({MOVIES_DATA.length})
+                </button>
+                {DEFENSES_DATA.map((def) => (
+                  <button
+                    key={def.id}
+                    onClick={() => setMovieDefenseFilter(def.id)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap border transition ${
+                      movieDefenseFilter === def.id
+                        ? 'bg-indigo-500/30 border-indigo-400 text-indigo-200'
+                        : 'bg-slate-800/70 border-slate-700 text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    {def.name}
+                  </button>
+                ))}
+              </div>
+
+              {/* Сетка карточек сериалов */}
+              <div className="space-y-4">
+                {filteredMovies.map((movie) => {
+                  const isViewed = viewedMovies.includes(movie.id);
+                  return (
+                    <div
+                      key={movie.id}
+                      className={`rounded-2xl bg-gradient-to-br ${movie.posterGradient} border border-slate-700/80 overflow-hidden shadow-lg transition`}
+                    >
+                      {/* Верхняя часть карточки */}
+                      <div className="p-4 space-y-3">
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-900/80 text-slate-300 border border-slate-700">
+                                {movie.themeTag}
+                              </span>
+                              {isViewed && (
+                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                  Прочитано
+                                </span>
+                              )}
+                            </div>
+                            <h3 className="text-lg font-bold text-white mt-1.5">{movie.title}</h3>
+                            <p className="text-xs text-slate-400">
+                              {movie.originalTitle} • Фокус:{' '}
+                              <span className="text-slate-200 font-medium">{movie.characters}</span>
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Теги защит (кликабельные — ведут в Каталог) */}
+                        <div className="flex flex-wrap gap-1.5">
+                          {movie.defenses.map((defId) => {
+                            const defObj = DEFENSES_DATA.find((d) => d.id === defId);
+                            if (!defObj) return null;
+                            return (
+                              <button
+                                key={defId}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openDefenseDetail(defId);
+                                }}
+                                className={`text-[11px] font-medium px-2.5 py-1 rounded-lg border flex items-center gap-1 transition hover:scale-105 ${defObj.badgeColor}`}
+                                title="Нажмите, чтобы открыть защиту в Каталоге"
+                              >
+                                <Shield className="w-3 h-3" />
+                                <span>{defObj.name}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        {/* Краткий контекст сцены */}
+                        <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 text-xs text-slate-300 leading-relaxed">
+                          <span className="font-semibold text-slate-100">Контекст сцены: </span>
+                          {movie.sceneContext}
+                        </div>
+
+                        {/* Кнопка полного разбора */}
+                        <button
+                          onClick={() => openMovieDetail(movie.id)}
+                          className="w-full py-2.5 px-4 rounded-xl bg-slate-900/90 hover:bg-indigo-950/80 border border-slate-700 hover:border-indigo-500/50 text-xs font-semibold text-indigo-300 flex items-center justify-between transition"
+                        >
+                          <span className="flex items-center gap-2">
+                            <BookOpen className="w-4 h-4" />
+                            Читать «Заметку на полях» (психоразбор)
+                          </span>
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* ========================================== */}
+          {/* ВКЛАДКА 4: ПРОФИЛЬ / МОЯ КАРТА (АЧИВКИ)    */}
+          {/* ========================================== */}
+          {activeTab === 'profile' && (
+            <div className="space-y-4">
+              {/* Карточка Батарейки осознанности */}
+              <div className="p-5 rounded-2xl bg-gradient-to-br from-indigo-950/70 via-slate-800/90 to-slate-900 border border-indigo-500/30 space-y-3.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                      <BatteryCharging className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h2 className="text-sm font-bold text-white">Баланс контакта с собой</h2>
+                      <p className="text-[11px] text-slate-400">
+                        Без гонки за очками — только бережное внимание
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-lg font-extrabold text-emerald-400">
+                    {awarenessBattery}%
+                  </span>
+                </div>
+
+                {/* Шкала заряда */}
+                <div className="w-full h-2.5 bg-slate-950 rounded-full overflow-hidden border border-slate-800">
+                  <div
+                    className="h-full bg-gradient-to-r from-emerald-500 via-teal-400 to-indigo-400 transition-all duration-500"
+                    style={{ width: `${awarenessBattery}%` }}
+                  />
+                </div>
+
+                {/* Статистика в 3 колонки */}
+                <div className="grid grid-cols-3 gap-2 pt-1">
+                  <div className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-center">
+                    <div className="text-base font-bold text-white">
+                      {viewedDefenses.length}/{DEFENSES_DATA.length}
+                    </div>
+                    <div className="text-[10px] text-slate-400 mt-0.5">Защит изучено</div>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-center">
+                    <div className="text-base font-bold text-white">
+                      {viewedMovies.length}/{MOVIES_DATA.length}
+                    </div>
+                    <div className="text-[10px] text-slate-400 mt-0.5">Кино-разборов</div>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-center">
+                    <div className="text-base font-bold text-white">{testHistory.length}</div>
+                    <div className="text-[10px] text-slate-400 mt-0.5">Сессий теста</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Секция Бейджей / Ачивок самопознания */}
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between px-1">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    Ачивки самопознания ({unlockedBadges.length}/{BADGES_CONFIG.length})
+                  </h3>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2.5">
+                  {BADGES_CONFIG.map((badge) => {
+                    const isUnlocked = unlockedBadges.includes(badge.id);
+                    const IconComp = badge.icon;
+                    return (
+                      <div
+                        key={badge.id}
+                        className={`p-3.5 rounded-2xl border transition flex flex-col justify-between ${
+                          isUnlocked
+                            ? 'bg-gradient-to-br from-indigo-950/60 to-slate-800/90 border-indigo-500/40 text-slate-100'
+                            : 'bg-slate-900/50 border-slate-800/80 text-slate-500 opacity-75'
+                        }`}
+                      >
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <div
+                              className={`p-2 rounded-xl ${
+                                isUnlocked
+                                  ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
+                                  : 'bg-slate-800 text-slate-500'
+                              }`}
+                            >
+                              <IconComp className="w-4 h-4" />
+                            </div>
+                            {isUnlocked ? (
+                              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+                                <Unlock className="w-2.5 h-2.5" /> Открыто
+                              </span>
+                            ) : (
+                              <Lock className="w-3.5 h-3.5 text-slate-600" />
+                            )}
+                          </div>
+                          <h4 className="text-xs font-bold leading-snug">{badge.title}</h4>
+                          <p className="text-[11px] mt-1 leading-relaxed text-slate-400">
+                            {badge.desc}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* История самопроверок */}
+              <div className="p-4 rounded-2xl bg-slate-800/60 border border-slate-700/70 space-y-3">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                  <Activity className="w-4 h-4 text-indigo-400" />
+                  Дневник состояний (история теста)
+                </h3>
+
+                {testHistory.length === 0 ? (
+                  <div className="text-xs text-slate-400 py-3 text-center space-y-2">
+                    <p>Вы еще не проходили мини-тест «Что фонит сегодня?».</p>
+                    <button
+                      onClick={() => setActiveTab('quiz')}
+                      className="px-3.5 py-2 rounded-xl bg-indigo-600 text-white text-xs font-medium"
+                    >
+                      Пройти первую самопроверку
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {testHistory.map((item) => {
+                      const pDef = DEFENSES_DATA.find((d) => d.id === item.primary);
+                      const sDef = DEFENSES_DATA.find((d) => d.id === item.secondary);
+                      if (!pDef) return null;
+                      return (
+                        <div
+                          key={item.id}
+                          onClick={() => openDefenseDetail(pDef.id)}
+                          className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 hover:border-slate-700 flex items-center justify-between cursor-pointer"
+                        >
+                          <div>
+                            <div className="text-[10px] text-slate-400">{item.date}</div>
+                            <div className="text-xs font-semibold text-slate-100 mt-0.5">
+                              {pDef.name}{' '}
+                              {sDef && (
+                                <span className="text-slate-400 font-normal">+ {sDef.name}</span>
+                              )}
+                            </div>
+                          </div>
+                          <ChevronRight className="w-4 h-4 text-slate-500" />
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </main>
+
+        {/* ========================================== */}
+        {/* МОДАЛЬНОЕ ОКНО: ДЕТАЛЬНАЯ КАРТОЧКА ЗАЩИТЫ   */}
+        {/* ========================================== */}
+        {selectedDefense && (
+          <div className="fixed inset-0 z-40 bg-slate-950/80 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4">
+            <div className="w-full max-w-md max-h-[90vh] bg-slate-900 border-t sm:border border-slate-700 rounded-t-3xl sm:rounded-3xl flex flex-col overflow-hidden shadow-2xl animate-slideUp">
+              {/* Шапка модалки */}
+              <div className="p-4 bg-slate-900/95 border-b border-slate-800 flex items-center justify-between sticky top-0 z-10">
+                <div>
+                  <span className="text-[10px] font-medium px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                    {selectedDefense.category}
+                  </span>
+                  <h2 className="text-lg font-bold text-white mt-1">{selectedDefense.name}</h2>
+                </div>
+                <button
+                  onClick={() => setSelectedDefense(null)}
+                  className="p-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Тело карточки */}
+              <div className="p-5 overflow-y-auto space-y-4 text-xs leading-relaxed">
+                <div className="p-3.5 rounded-2xl bg-indigo-950/40 border border-indigo-500/30 text-indigo-200 font-medium text-sm">
+                  {selectedDefense.metaphor}
+                </div>
+
+                <div>
+                  <h4 className="font-bold text-slate-100 uppercase tracking-wider text-[11px] mb-1">
+                    Суть механизма простыми словами
+                  </h4>
+                  <p className="text-slate-300">{selectedDefense.essence}</p>
+                </div>
+
+                <div className="grid grid-cols-1 gap-3">
+                  <div className="p-3.5 rounded-2xl bg-emerald-950/30 border border-emerald-500/30">
+                    <h4 className="font-bold text-emerald-300 text-xs mb-1 flex items-center gap-1.5">
+                      <CheckCircle2 className="w-4 h-4" />
+                      Зачем психике это нужно (Плюс / Светлая сторона)
+                    </h4>
+                    <p className="text-slate-300">{selectedDefense.plus}</p>
+                  </div>
+
+                  <div className="p-3.5 rounded-2xl bg-rose-950/30 border border-rose-500/30">
+                    <h4 className="font-bold text-rose-300 text-xs mb-1 flex items-center gap-1.5">
+                      <Flame className="w-4 h-4" />
+                      Цена защиты (Минус / Если застрять)
+                    </h4>
+                    <p className="text-slate-300">{selectedDefense.minus}</p>
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-slate-800/80 border border-slate-700/80 space-y-2">
+                  <h4 className="font-bold text-slate-100 text-xs">
+                    Маркеры в речи, теле и поведении:
+                  </h4>
+                  <ul className="space-y-1.5 text-slate-300">
+                    {selectedDefense.markers.map((m, i) => (
+                      <li key={i} className="flex items-start gap-2">
+                        <span className="text-indigo-400 font-bold">•</span>
+                        <span>{m}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Прямой переход к сценам в Кино-копилке */}
+                <div className="space-y-2 pt-1">
+                  <h4 className="font-bold text-amber-300 text-xs flex items-center gap-1.5">
+                    <Clapperboard className="w-4 h-4" />
+                    Как эта защита показана в сериалах:
+                  </h4>
+                  <div className="space-y-2">
+                    {selectedDefense.linkedMovies.map((mId) => {
+                      const movie = MOVIES_DATA.find((m) => m.id === mId);
+                      if (!movie) return null;
+                      return (
+                        <button
+                          key={mId}
+                          onClick={() => openMovieDetail(mId)}
+                          className="w-full p-3 rounded-xl bg-slate-800 hover:bg-indigo-950/70 border border-slate-700 hover:border-indigo-500/50 text-left flex items-center justify-between transition"
+                        >
+                          <div>
+                            <div className="font-bold text-white text-xs">
+                              {movie.title} — {movie.characters}
+                            </div>
+                            <div className="text-[11px] text-slate-400 mt-0.5">
+                              Перейти к сцене в Кино-копилке ➔
+                            </div>
+                          </div>
+                          <Film className="w-4 h-4 text-indigo-400 shrink-0" />
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ========================================== */}
+        {/* МОДАЛЬНОЕ ОКНО: РАЗБОР СЦЕНЫ В КИНО-КОПИЛКЕ */}
+        {/* ========================================== */}
+        {selectedMovie && (
+          <div className="fixed inset-0 z-40 bg-slate-950/80 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4">
+            <div className="w-full max-w-md max-h-[90vh] bg-slate-900 border-t sm:border border-slate-700 rounded-t-3xl sm:rounded-3xl flex flex-col overflow-hidden shadow-2xl animate-slideUp">
+              {/* Шапка */}
+              <div className="p-4 bg-slate-900/95 border-b border-slate-800 flex items-center justify-between sticky top-0 z-10">
+                <div>
+                  <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                    Кино-копилка • Разбор
+                  </span>
+                  <h2 className="text-lg font-bold text-white mt-1">{selectedMovie.title}</h2>
+                </div>
+                <button
+                  onClick={() => setSelectedMovie(null)}
+                  className="p-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Контент разбора */}
+              <div className="p-5 overflow-y-auto space-y-4 text-xs leading-relaxed">
+                <div className="flex items-center justify-between text-slate-400 border-b border-slate-800 pb-2.5">
+                  <span>{selectedMovie.originalTitle}</span>
+                  <span className="text-slate-200 font-semibold">{selectedMovie.characters}</span>
+                </div>
+
+                {/* Цитата */}
+                <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 italic text-slate-300 flex gap-2.5">
+                  <Quote className="w-5 h-5 text-indigo-400 shrink-0" />
+                  <span>{selectedMovie.quote}</span>
+                </div>
+
+                {/* Контекст */}
+                <div>
+                  <h4 className="font-bold text-slate-100 uppercase tracking-wider text-[11px] mb-1">
+                    Контекст сцены и поведения
+                  </h4>
+                  <p className="text-slate-300">{selectedMovie.sceneContext}</p>
+                </div>
+
+                {/* Авторский разбор («Заметка на полях») */}
+                <div className="p-4 rounded-2xl bg-gradient-to-br from-indigo-950/60 to-slate-800/90 border border-indigo-500/40 space-y-2">
+                  <div className="text-xs font-bold text-indigo-300 flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4" />
+                    Заметка на полях (Психологический разбор):
+                  </div>
+                  <p className="text-slate-200 leading-relaxed">{selectedMovie.analysisNote}</p>
+                </div>
+
+                {/* Связанные защиты — переход обратно в Каталог */}
+                <div className="space-y-2">
+                  <h4 className="font-bold text-slate-300 text-xs">
+                    Какие защитные механизмы здесь работают (нажмите для изучения):
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedMovie.defenses.map((defId) => {
+                      const defObj = DEFENSES_DATA.find((d) => d.id === defId);
+                      if (!defObj) return null;
+                      return (
+                        <button
+                          key={defId}
+                          onClick={() => {
+                            setSelectedMovie(null);
+                            openDefenseDetail(defId);
+                          }}
+                          className={`px-3 py-2 rounded-xl border text-xs font-semibold flex items-center gap-1.5 ${defObj.badgeColor}`}
+                        >
+                          <Shield className="w-3.5 h-3.5" />
+                          <span>{defObj.name} ➔</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Кнопка поделиться разбором */}
+                <button
+                  onClick={() =>
+                    handleShareResult(
+                      `🎬 Психоразбор сериала ${selectedMovie.title} (${selectedMovie.characters}) в «Карте Защит»:\n\n${selectedMovie.analysisNote}`
+                    )
+                  }
+                  className="w-full py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-medium flex items-center justify-center gap-2"
+                >
+                  <Share2 className="w-4 h-4 text-indigo-400" />
+                  Скопировать заметку для Telegram
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ========================================== */}
+        {/* ПРИВЕТСТВЕННЫЙ ОНБОРДИНГ (3 ЭКРАНА)        */}
+        {/* ========================================== */}
+        {showOnboarding && (
+          <div className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-lg flex items-center justify-center p-4">
+            <div className="w-full max-w-sm bg-slate-900 border border-slate-700/80 rounded-3xl p-6 shadow-2xl space-y-5 relative">
+              <button
+                onClick={() => handleCloseOnboarding()}
+                className="absolute top-4 right-4 p-1.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              {/* Индикаторы слайдов */}
+              <div className="flex gap-1.5 justify-center">
+                {[0, 1, 2].map((step) => (
+                  <div
+                    key={step}
+                    className={`h-1.5 rounded-full transition-all ${
+                      onboardingStep === step ? 'w-8 bg-indigo-500' : 'w-2 bg-slate-700'
+                    }`}
+                  />
+                ))}
+              </div>
+
+              {onboardingStep === 0 && (
+                <div className="text-center space-y-3 py-2">
+                  <div className="w-14 h-14 rounded-2xl bg-indigo-500/20 border border-indigo-400/40 text-indigo-300 flex items-center justify-center mx-auto shadow-inner">
+                    <Shield className="w-7 h-7" />
+                  </div>
+                  <h2 className="text-lg font-bold text-white">Привет! Это «Карта Защит»</h2>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    Знаете это чувство, когда внутри буря или сильная усталость, но вы держитесь из последних сил на автопилоте? Это не поломка — так работают защитные механизмы психики.
+                  </p>
+                  <p className="text-xs text-indigo-200/90 bg-indigo-950/40 border border-indigo-500/30 p-3 rounded-xl leading-relaxed">
+                    Здесь мы не ставим диагнозы и не осуждаем себя. Мы бережно исследуем, как наша психика справляется с реальностью — через гештальт-подход и разборы глубокого кино.
+                  </p>
+                </div>
+              )}
+
+              {onboardingStep === 1 && (
+                <div className="space-y-3 py-1">
+                  <h2 className="text-base font-bold text-white text-center">
+                    Три компаса для вашего самопознания
+                  </h2>
+                  <div className="space-y-2.5 text-xs">
+                    <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700/70 flex items-start gap-3">
+                      <Layers className="w-5 h-5 text-indigo-400 shrink-0 mt-0.5" />
+                      <div>
+                        <div className="font-bold text-white">🧩 Каталог и Карта защит</div>
+                        <div className="text-slate-300 mt-0.5">
+                          Наглядная схема и карточки без сухого академизма: зачем мы убегаем в голову или сжимаем челюсти.
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700/70 flex items-start gap-3">
+                      <Compass className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+                      <div>
+                        <div className="font-bold text-white">🎯 Тест «Что фонит сегодня?»</div>
+                        <div className="text-slate-300 mt-0.5">
+                          Минутная самопроверка, которая поможет заметить активный механизм прямо сейчас.
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700/70 flex items-start gap-3">
+                      <Film className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+                      <div>
+                        <div className="font-bold text-white">🎬 Кино-копилка</div>
+                        <div className="text-slate-300 mt-0.5">
+                          Разборы сцен из сериалов «Оставленные», «Клиент всегда мёртв», «Острые предметы» и др.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {onboardingStep === 2 && (
+                <div className="text-center space-y-3 py-2">
+                  <div className="w-14 h-14 rounded-2xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 flex items-center justify-center mx-auto">
+                    <Sparkles className="w-7 h-7" />
+                  </div>
+                  <h2 className="text-lg font-bold text-white">Готовы заглянуть под капот?</h2>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    За каждое исследование вы будете открывать бейджи самопознания и пополнять свою батарейку осознанности. С чего начнем сегодня?
+                  </p>
+                </div>
+              )}
+
+              {/* Кнопки управления онбордингом */}
+              {onboardingStep < 2 ? (
+                <button
+                  onClick={() => setOnboardingStep(onboardingStep + 1)}
+                  className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-lg shadow-indigo-600/30 transition"
+                >
+                  <span>Далее</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              ) : (
+                <div className="space-y-2">
+                  <button
+                    onClick={() => handleCloseOnboarding('quiz')}
+                    className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 transition"
+                  >
+                    <Compass className="w-4 h-4" />
+                    <span>Пройти тест «Что фонит сегодня?»</span>
+                  </button>
+                  <button
+                    onClick={() => handleCloseOnboarding('movies')}
+                    className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium transition"
+                  >
+                    Перейти сразу в Кино-копилку 🎬
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ========================================== */}
+        {/* НИЖНЯЯ ПАНЕЛЬ НАВИГАЦИИ (BOTTOM BAR)       */}
+        {/* ========================================== */}
+        <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md z-30 bg-slate-900/95 backdrop-blur-xl border-t border-slate-800 px-2 py-2 flex items-center justify-around">
+          {[
+            { id: 'catalog', label: 'Каталог', icon: Layers },
+            { id: 'quiz', label: 'Что фонит?', icon: Compass },
+            { id: 'movies', label: 'Кино-копилка', icon: Film },
+            {
+              id: 'profile',
+              label: 'Моя карта',
+              icon: Award,
+              badgeCount: unlockedBadges.length
+            }
+          ].map((tab) => {
+            const IconComponent = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  setSelectedDefense(null);
+                  setSelectedMovie(null);
+                  setActiveTab(tab.id);
+                }}
+                className={`relative flex flex-col items-center justify-center py-1.5 px-3 rounded-xl transition ${
+                  isActive ? 'text-indigo-400' : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <div className="relative">
+                  <IconComponent className={`w-5 h-5 ${isActive ? 'scale-110' : ''} transition`} />
+                  {tab.badgeCount > 0 && (
+                    <span className="absolute -top-1.5 -right-2.5 px-1.5 py-0.2 rounded-full bg-indigo-500 text-white text-[9px] font-bold">
+                      {tab.badgeCount}
+                    </span>
+                  )}
+                </div>
+                <span className="text-[10px] font-medium mt-1">{tab.label}</span>
+                {isActive && (
+                  <span className="w-4 h-0.5 rounded-full bg-indigo-400 mt-0.5" />
+                )}
+              </button>
+            );
+          })}
+        </nav>
+      </div>
+    </div>
+  );
+}
+```
