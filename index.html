@@ -1301,4 +1301,118 @@
                   </div>
                 </div>
 
-                <div className="p
+                <div className="p-4 bg-slate-900 border border-slate-800 rounded-2xl space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-indigo-400 uppercase tracking-wider">
+                      ⚓ Быстрое заземление «5–4–3–2–1»
+                    </span>
+                    <button
+                      onClick={() => { triggerHaptic('light'); setCheckedSteps({}); }}
+                      className="text-[11px] text-slate-400 hover:text-white"
+                    >
+                      Сбросить
+                    </button>
+                  </div>
+                  <p className="text-xs text-slate-400">
+                    Нажимайте на каждый пункт по мере выполнения, чтобы вернуть мозг из тревожных фантазий в «здесь и сейчас»:
+                  </p>
+
+                  <div className="space-y-2">
+                    {GROUNDING_STEPS.map((s) => {
+                      const done = !!checkedSteps[s.id];
+                      return (
+                        <button
+                          key={s.id}
+                          onClick={() => {
+                            triggerHaptic('light');
+                            setCheckedSteps({ ...checkedSteps, [s.id]: !done });
+                          }}
+                          className={`w-full text-left p-3 rounded-xl border text-xs flex items-center gap-3 transition ${
+                            done
+                              ? 'bg-teal-950/40 border-teal-600/50 text-teal-200 line-through opacity-75'
+                              : 'bg-slate-950/70 border-slate-800 text-slate-200'
+                          }`}
+                        >
+                          <span className="text-base">{done ? '✅' : s.icon}</span>
+                          <span className="leading-snug flex-1">{s.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ВКЛАДКА 5: КИНО */}
+            {tab === 'cinema' && (
+              <div className="space-y-3">
+                <div className="p-3 bg-slate-900/80 border border-slate-800 rounded-xl text-xs text-slate-300">
+                  🎬 Как выглядят психологические защиты и радикалы личности на примере героев известных фильмов и сериалов.
+                </div>
+
+                {CINEMA_CASES.map((film, idx) => (
+                  <div key={idx} className="p-4 bg-slate-900 border border-slate-800/80 rounded-2xl space-y-2">
+                    <span className="text-[11px] font-bold text-teal-400 uppercase tracking-wide block">
+                      {film.title}
+                    </span>
+                    <h3 className="text-sm font-bold text-slate-100">
+                      Герой: {film.hero}
+                    </h3>
+                    <p className="text-[11px] font-semibold text-amber-300/90">
+                      Паттерн: {film.defenses}
+                    </p>
+                    <p className="text-xs text-slate-300 leading-relaxed pt-1">
+                      {film.text}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </main>
+
+          {/* Нижнее меню */}
+          <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-[#090d16]/95 border-t border-slate-800/90 backdrop-blur-md flex justify-around py-2 px-1 z-30">
+            <button
+              onClick={() => { triggerHaptic('light'); setTab('catalog'); }}
+              className={`flex flex-col items-center py-1 px-1.5 text-[10px] transition ${tab === 'catalog' ? 'text-teal-400 font-bold' : 'text-slate-400'}`}
+            >
+              <span className="text-base mb-0.5">🧩</span>
+              <span>Атлас</span>
+            </button>
+            <button
+              onClick={() => { triggerHaptic('light'); setTab('dict'); }}
+              className={`flex flex-col items-center py-1 px-1.5 text-[10px] transition ${tab === 'dict' ? 'text-teal-400 font-bold' : 'text-slate-400'}`}
+            >
+              <span className="text-base mb-0.5">🗣</span>
+              <span>Словарь</span>
+            </button>
+            <button
+              onClick={() => { triggerHaptic('light'); setTab('test'); }}
+              className={`flex flex-col items-center py-1 px-1.5 text-[10px] transition ${tab === 'test' ? 'text-teal-400 font-bold' : 'text-slate-400'}`}
+            >
+              <span className="text-base mb-0.5">🎯</span>
+              <span>Тест</span>
+            </button>
+            <button
+              onClick={() => { triggerHaptic('light'); setTab('sos'); }}
+              className={`flex flex-col items-center py-1 px-1.5 text-[10px] transition ${tab === 'sos' ? 'text-teal-400 font-bold' : 'text-slate-400'}`}
+            >
+              <span className="text-base mb-0.5">🫁</span>
+              <span>Помощь</span>
+            </button>
+            <button
+              onClick={() => { triggerHaptic('light'); setTab('cinema'); }}
+              className={`flex flex-col items-center py-1 px-1.5 text-[10px] transition ${tab === 'cinema' ? 'text-teal-400 font-bold' : 'text-slate-400'}`}
+            >
+              <span className="text-base mb-0.5">🎬</span>
+              <span>Кино</span>
+            </button>
+          </nav>
+        </div>
+      );
+    }
+    
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
